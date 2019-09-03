@@ -28,7 +28,7 @@ public:
       uint128_t                 get_index_i128()const { return index_i128; }
       const eosio::checksum256& get_index_i256()const { return index_i256; }
 
-      EOSLIB_SERIALIZE( main_record, (id)(index_f64)(index_f128)(index_i64)(index_i128)(index_i256) )
+      ACCLIB_SERIALIZE( main_record, (id)(index_f64)(index_f128)(index_i64)(index_i128)(index_i256) )
    };
 
    using data_table = eosio::multi_index<"data"_n, main_record,

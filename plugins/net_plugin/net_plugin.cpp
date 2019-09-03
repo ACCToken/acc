@@ -433,7 +433,7 @@ namespace eosio {
             fill_out_buffer( bufs, _sync_write_queue );
          } else { // postpone real_time write_queue if sync queue is not empty
             fill_out_buffer( bufs, _write_queue );
-            EOS_ASSERT( _write_queue_size == 0, plugin_exception, "write queue size expected to be zero" );
+            ACC_ASSERT( _write_queue_size == 0, plugin_exception, "write queue size expected to be zero" );
          }
       }
 
@@ -628,16 +628,16 @@ namespace eosio {
       msg_handler( net_plugin_impl &imp, const connection_ptr& conn) : impl(imp), c(conn) {}
 
       void operator()( const signed_block& msg ) const {
-         EOS_ASSERT( false, plugin_config_exception, "operator()(signed_block&&) should be called" );
+         ACC_ASSERT( false, plugin_config_exception, "operator()(signed_block&&) should be called" );
       }
       void operator()( signed_block& msg ) const {
-         EOS_ASSERT( false, plugin_config_exception, "operator()(signed_block&&) should be called" );
+         ACC_ASSERT( false, plugin_config_exception, "operator()(signed_block&&) should be called" );
       }
       void operator()( const packed_transaction& msg ) const {
-         EOS_ASSERT( false, plugin_config_exception, "operator()(packed_transaction&&) should be called" );
+         ACC_ASSERT( false, plugin_config_exception, "operator()(packed_transaction&&) should be called" );
       }
       void operator()( packed_transaction& msg ) const {
-         EOS_ASSERT( false, plugin_config_exception, "operator()(packed_transaction&&) should be called" );
+         ACC_ASSERT( false, plugin_config_exception, "operator()(packed_transaction&&) should be called" );
       }
 
       void operator()( signed_block&& msg ) const {
@@ -1243,7 +1243,7 @@ namespace eosio {
       ,state(in_sync)
    {
       chain_plug = app().find_plugin<chain_plugin>();
-      EOS_ASSERT( chain_plug, chain::missing_chain_plugin_exception, ""  );
+      ACC_ASSERT( chain_plug, chain::missing_chain_plugin_exception, ""  );
    }
 
    constexpr auto sync_manager::stage_str(stages s) {
@@ -2081,7 +2081,7 @@ namespace eosio {
                         fc_elog( logger,"async_read_some callback: bytes_transfered = ${bt}, buffer.bytes_to_write = ${btw}",
                                  ("bt",bytes_transferred)("btw",conn->pending_message_buffer.bytes_to_write()) );
                      }
-                     EOS_ASSERT(bytes_transferred <= conn->pending_message_buffer.bytes_to_write(), plugin_exception, "");
+                     ACC_ASSERT(bytes_transferred <= conn->pending_message_buffer.bytes_to_write(), plugin_exception, "");
                      conn->pending_message_buffer.advance_write_ptr(bytes_transferred);
                      while (conn->pending_message_buffer.bytes_to_read() > 0) {
                         uint32_t bytes_in_buffer = conn->pending_message_buffer.bytes_to_read();
@@ -2900,7 +2900,7 @@ namespace eosio {
          ( "p2p-server-address", bpo::value<string>(), "An externally accessible host:port for identifying this node. Defaults to p2p-listen-endpoint.")
          ( "p2p-peer-address", bpo::value< vector<string> >()->composing(), "The public endpoint of a peer node to connect to. Use multiple p2p-peer-address options as needed to compose a network.")
          ( "p2p-max-nodes-per-host", bpo::value<int>()->default_value(def_max_nodes_per_host), "Maximum number of client nodes from any single IP address")
-         ( "agent-name", bpo::value<string>()->default_value("\"EOS Test Agent\""), "The name supplied to identify this node amongst the peers.")
+         ( "agent-name", bpo::value<string>()->default_value("\"ACC Test Agent\""), "The name supplied to identify this node amongst the peers.")
          ( "allowed-connection", bpo::value<vector<string>>()->multitoken()->default_value({"any"}, "any"), "Can be 'any' or 'producers' or 'specified' or 'none'. If 'specified', peer-key must be specified at least once. If only 'producers', peer-key is not required. 'producers' and 'specified' may be combined.")
          ( "peer-key", bpo::value<vector<string>>()->composing()->multitoken(), "Optional public key of peer allowed to connect.  May be used multiple times.")
          ( "peer-private-key", boost::program_options::value<vector<string>>()->composing()->multitoken(),
@@ -2961,7 +2961,7 @@ namespace eosio {
          }
 
          my->thread_pool_size = options.at( "net-threads" ).as<uint16_t>();
-         EOS_ASSERT( my->thread_pool_size > 0, chain::plugin_config_exception,
+         ACC_ASSERT( my->thread_pool_size > 0, chain::plugin_config_exception,
                      "net-threads ${num} must be greater than 0", ("num", my->thread_pool_size) );
 
          if( options.count( "p2p-peer-address" )) {
@@ -2986,7 +2986,7 @@ namespace eosio {
          }
 
          if( my->allowed_connections & net_plugin_impl::Specified )
-            EOS_ASSERT( options.count( "peer-key" ),
+            ACC_ASSERT( options.count( "peer-key" ),
                         plugin_config_exception,
                        "At least one peer-key must accompany 'allowed-connection=specified'" );
 
@@ -3007,7 +3007,7 @@ namespace eosio {
          }
 
          my->chain_plug = app().find_plugin<chain_plugin>();
-         EOS_ASSERT( my->chain_plug, chain::missing_chain_plugin_exception, ""  );
+         ACC_ASSERT( my->chain_plug, chain::missing_chain_plugin_exception, ""  );
          my->chain_id = my->chain_plug->get_chain_id();
          fc::rand_pseudo_bytes( my->node_id.data(), my->node_id.data_size());
          fc_ilog( logger, "my node_id is ${id}", ("id", my->node_id ));

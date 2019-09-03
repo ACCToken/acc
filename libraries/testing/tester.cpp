@@ -89,7 +89,7 @@ namespace eosio { namespace testing {
       ( builtin_protocol_feature_t codename ) -> digest_type {
          auto res = visited_builtins.emplace( codename, optional<digest_type>() );
          if( !res.second ) {
-            EOS_ASSERT( res.first->second, protocol_feature_exception,
+            ACC_ASSERT( res.first->second, protocol_feature_exception,
                         "invariant failure: cycle found in builtin protocol feature dependencies"
             );
             return *res.first->second;

@@ -41,8 +41,8 @@ struct blocklog {
 void blocklog::read_log() {
    block_log block_logger(blocks_dir);
    const auto end = block_logger.read_head();
-   EOS_ASSERT( end, block_log_exception, "No blocks found in block log" );
-   EOS_ASSERT( end->block_num() > 1, block_log_exception, "Only one block found in block log" );
+   ACC_ASSERT( end, block_log_exception, "No blocks found in block log" );
+   ACC_ASSERT( end->block_num() > 1, block_log_exception, "Only one block found in block log" );
 
    ilog( "existing block log contains block num 1 through block num ${n}", ("n",end->block_num()) );
 

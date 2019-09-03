@@ -70,11 +70,11 @@ CONTRACT test_ram_limit : public contract {
 
          uint64_t primary_key()const { return key; }
 
-         EOSLIB_SERIALIZE( test, (key)(data) )
+         ACCLIB_SERIALIZE( test, (key)(data) )
       };
       typedef eosio::multi_index< "test.table"_n, test> test_table;
 };
 
 #pragma clang diagnostic pop
 
-EOSIO_DISPATCH( test_ram_limit, (setentry)(rmentry)(printentry) )
+ACC_DISPATCH( test_ram_limit, (setentry)(rmentry)(printentry) )

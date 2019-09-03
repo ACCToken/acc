@@ -42,7 +42,7 @@ namespace eosio { namespace chain {
             if( whitelisted_intrinsics != nullptr ) {
                // Protect access to "private" injected functions; so for now just simply allow "env" since injected
                // functions are in a different module.
-               EOS_ASSERT( mod_name == "env", wasm_exception,
+               ACC_ASSERT( mod_name == "env", wasm_exception,
                            "importing from module that is not 'env': ${module}.${export}",
                            ("module",mod_name)("export",export_name) );
 
@@ -55,7 +55,7 @@ namespace eosio { namespace chain {
                return true;
             }
 
-            EOS_THROW( wasm_exception, "${module}.${export} unresolveable",
+            ACC_THROW( wasm_exception, "${module}.${export} unresolveable",
                       ("module",mod_name)("export",export_name) );
             return false;
          } FC_CAPTURE_AND_RETHROW( (mod_name)(export_name) ) }
@@ -82,7 +82,7 @@ namespace eosio { namespace chain {
          //call before dtor to skip what can be minutes of dtor overhead with some runtimes; can cause leaks
          void indicate_shutting_down();
 
-         //validates code -- does a WASM validation pass and checks the wasm against EOSIO specific constraints
+         //validates code -- does a WASM validation pass and checks the wasm against ACC specific constraints
          static void validate(const controller& control, const bytes& code);
 
          //indicate that a particular code probably won't be used after given block_num

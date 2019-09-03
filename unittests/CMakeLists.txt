@@ -3,8 +3,8 @@ find_package( Gperftools QUIET )
 ### Build contracts with cdt if available ###
 include(ExternalProject)
 
-if( EOSIO_COMPILE_TEST_CONTRACTS )
-   set(EOSIO_WASM_OLD_BEHAVIOR "Off")
+if( ACC_COMPILE_TEST_CONTRACTS )
+   set(ACC_WASM_OLD_BEHAVIOR "Off")
    find_package(eosio.cdt REQUIRED)
 
    message( STATUS "Building contracts in directory `eos/unittests/test-contracts/`" )
@@ -12,7 +12,7 @@ if( EOSIO_COMPILE_TEST_CONTRACTS )
       test_contracts_project
       SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test-contracts
       BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/test-contracts
-      CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=${EOSIO_CDT_ROOT}/lib/cmake/eosio.cdt/EosioWasmToolchain.cmake -DEOSIO_COMPILE_TEST_CONTRACTS=${EOSIO_COMPILE_TEST_CONTRACTS}
+      CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=${ACC_CDT_ROOT}/lib/cmake/eosio.cdt/EosioWasmToolchain.cmake -DACC_COMPILE_TEST_CONTRACTS=${ACC_COMPILE_TEST_CONTRACTS}
       UPDATE_COMMAND ""
       PATCH_COMMAND ""
       TEST_COMMAND ""
@@ -43,7 +43,7 @@ add_executable( unit_test ${UNIT_TESTS}) # build unit tests as one executable
 
 target_link_libraries( unit_test eosio_chain chainbase eosio_testing fc appbase ${PLATFORM_SPECIFIC_LIBS} )
 
-target_compile_options(unit_test PUBLIC -DDISABLE_EOSLIB_SERIALIZE)
+target_compile_options(unit_test PUBLIC -DDISABLE_ACCLIB_SERIALIZE)
 target_include_directories( unit_test PUBLIC
                             ${CMAKE_SOURCE_DIR}/libraries/testing/include
                             ${CMAKE_SOURCE_DIR}/test-contracts

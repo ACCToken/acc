@@ -33,13 +33,13 @@ struct dummy_action {
   uint64_t b; //8
   int32_t  c; //4
 
-  EOSLIB_SERIALIZE( dummy_action, (a)(b)(c) )
+  ACCLIB_SERIALIZE( dummy_action, (a)(b)(c) )
 };
 
 struct u128_action {
   unsigned __int128  values[3]; //16*3
 
-  EOSLIB_SERIALIZE( u128_action, (values) )
+  ACCLIB_SERIALIZE( u128_action, (values) )
 };
 
 struct cf_action {
@@ -53,7 +53,7 @@ struct cf_action {
    uint32_t       payload = 100;
    uint32_t       cfd_idx = 0; // context free data index
 
-   EOSLIB_SERIALIZE( cf_action, (payload)(cfd_idx) )
+   ACCLIB_SERIALIZE( cf_action, (payload)(cfd_idx) )
 };
 
 // Deferred Transaction Trigger Action
@@ -71,7 +71,7 @@ struct dtt_action {
    uint64_t       permission_name = "active"_n.value;
    uint32_t       delay_sec = 2;
 
-   EOSLIB_SERIALIZE( dtt_action, (payer)(deferred_account)(deferred_action)(permission_name)(delay_sec) )
+   ACCLIB_SERIALIZE( dtt_action, (payer)(deferred_account)(deferred_action)(permission_name)(delay_sec) )
 };
 
 #pragma pack(pop)
@@ -89,5 +89,5 @@ struct invalid_access_action {
    uint32_t index;
    bool store;
 
-   EOSLIB_SERIALIZE( invalid_access_action, (code)(val)(index)(store) )
+   ACCLIB_SERIALIZE( invalid_access_action, (code)(val)(index)(store) )
 };

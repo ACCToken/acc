@@ -126,8 +126,8 @@ namespace eosio { namespace chain {
          my->block_stream.seekg( 0 );
          my->version = 0;
          my->block_stream.read( (char*)&my->version, sizeof(my->version) );
-         EOS_ASSERT( my->version > 0, block_log_exception, "Block log was not setup properly" );
-         EOS_ASSERT( my->version >= min_supported_version && my->version <= max_supported_version, block_log_unsupported_version,
+         ACC_ASSERT( my->version > 0, block_log_exception, "Block log was not setup properly" );
+         ACC_ASSERT( my->version >= min_supported_version && my->version <= max_supported_version, block_log_unsupported_version,
                  "Unsupported version of block log. Block log version is ${version} while code supports version(s) [${min},${max}]",
                  ("version", my->version)("min", block_log::min_supported_version)("max", block_log::max_supported_version) );
 
@@ -136,7 +136,7 @@ namespace eosio { namespace chain {
          if (my->version > 1){
             my->first_block_num = 0;
             my->block_stream.read( (char*)&my->first_block_num, sizeof(my->first_block_num) );
-            EOS_ASSERT(my->first_block_num > 0, block_log_exception, "Block log is malformed, first recorded block number is 0 but must be greater than or equal to 1");
+            ACC_ASSERT(my->first_block_num > 0, block_log_exception, "Block log is malformed, first recorded block number is 0 but must be greater than or equal to 1");
          } else {
             my->first_block_num = 1;
          }
@@ -179,14 +179,14 @@ namespace eosio { namespace chain {
 
    uint64_t block_log::append(const signed_block_ptr& b) {
       try {
-         EOS_ASSERT( my->genesis_written_to_block_log, block_log_append_fail, "Cannot append to block log until the genesis is first written" );
+         ACC_ASSERT( my->genesis_written_to_block_log, block_log_append_fail, "Cannot append to block log until the genesis is first written" );
 
          my->check_open_files();
 
          my->block_stream.seekp(0, std::ios::end);
          my->index_stream.seekp(0, std::ios::end);
          uint64_t pos = my->block_stream.tellp();
-         EOS_ASSERT(my->index_stream.tellp() == sizeof(uint64_t) * (b->block_num() - my->first_block_num),
+         ACC_ASSERT(my->index_stream.tellp() == sizeof(uint64_t) * (b->block_num() - my->first_block_num),
                    block_log_append_fail,
                    "Append to index file occuring at wrong position.",
                    ("position", (uint64_t) my->index_stream.tellp())
@@ -265,7 +265,7 @@ namespace eosio { namespace chain {
          uint64_t pos = get_block_pos(block_num);
          if (pos != npos) {
             b = read_block(pos).first;
-            EOS_ASSERT(b->block_num() == block_num, reversible_blocks_exception,
+            ACC_ASSERT(b->block_num() == block_num, reversible_blocks_exception,
                       "Wrong block was read from block log.", ("returned", b->block_num())("expected", block_num));
          }
          return b;
@@ -358,7 +358,7 @@ namespace eosio { namespace chain {
 
    fc::path block_log::repair_log( const fc::path& data_dir, uint32_t truncate_at_block ) {
       ilog("Recovering Block Log...");
-      EOS_ASSERT( fc::is_directory(data_dir) && fc::is_regular_file(data_dir / "blocks.log"), block_log_not_found,
+      ACC_ASSERT( fc::is_directory(data_dir) && fc::is_regular_file(data_dir / "blocks.log"), block_log_not_found,
                  "Block log not found in '${blocks_dir}'", ("blocks_dir", data_dir)          );
 
       auto now = fc::time_point::now();
@@ -369,10 +369,10 @@ namespace eosio { namespace chain {
       }
       auto backup_dir = blocks_dir.parent_path();
       auto blocks_dir_name = blocks_dir.filename();
-      EOS_ASSERT( blocks_dir_name.generic_string() != ".", block_log_exception, "Invalid path to blocks directory" );
+      ACC_ASSERT( blocks_dir_name.generic_string() != ".", block_log_exception, "Invalid path to blocks directory" );
       backup_dir = backup_dir / blocks_dir_name.generic_string().append("-").append( now );
 
-      EOS_ASSERT( !fc::exists(backup_dir), block_log_backup_dir_exist,
+      ACC_ASSERT( !fc::exists(backup_dir), block_log_backup_dir_exist,
                  "Cannot move existing blocks directory to already existing directory '${new_blocks_dir}'",
                  ("new_blocks_dir", backup_dir) );
 
@@ -396,8 +396,8 @@ namespace eosio { namespace chain {
 
       uint32_t version = 0;
       old_block_stream.read( (char*)&version, sizeof(version) );
-      EOS_ASSERT( version > 0, block_log_exception, "Block log was not setup properly" );
-      EOS_ASSERT( version >= min_supported_version && version <= max_supported_version, block_log_unsupported_version,
+      ACC_ASSERT( version > 0, block_log_exception, "Block log was not setup properly" );
+      ACC_ASSERT( version >= min_supported_version && version <= max_supported_version, block_log_unsupported_version,
                  "Unsupported version of block log. Block log version is ${version} while code supports version(s) [${min},${max}]",
                  ("version", version)("min", block_log::min_supported_version)("max", block_log::max_supported_version) );
 
@@ -420,7 +420,7 @@ namespace eosio { namespace chain {
          std::decay_t<decltype(npos)> actual_totem;
          old_block_stream.read ( (char*)&actual_totem, sizeof(actual_totem) );
 
-         EOS_ASSERT(actual_totem == expected_totem, block_log_exception,
+         ACC_ASSERT(actual_totem == expected_totem, block_log_exception,
                     "Expected separator between block log header and blocks was not found( expected: ${e}, actual: ${a} )",
                     ("e", fc::to_hex((char*)&expected_totem, sizeof(expected_totem) ))("a", fc::to_hex((char*)&actual_totem, sizeof(actual_totem) )));
 
@@ -520,7 +520,7 @@ namespace eosio { namespace chain {
    }
 
    genesis_state block_log::extract_genesis_state( const fc::path& data_dir ) {
-      EOS_ASSERT( fc::is_directory(data_dir) && fc::is_regular_file(data_dir / "blocks.log"), block_log_not_found,
+      ACC_ASSERT( fc::is_directory(data_dir) && fc::is_regular_file(data_dir / "blocks.log"), block_log_not_found,
                  "Block log not found in '${blocks_dir}'", ("blocks_dir", data_dir)          );
 
       std::fstream  block_stream;
@@ -528,8 +528,8 @@ namespace eosio { namespace chain {
 
       uint32_t version = 0;
       block_stream.read( (char*)&version, sizeof(version) );
-      EOS_ASSERT( version > 0, block_log_exception, "Block log was not setup properly." );
-      EOS_ASSERT( version >= min_supported_version && version <= max_supported_version, block_log_unsupported_version,
+      ACC_ASSERT( version > 0, block_log_exception, "Block log was not setup properly." );
+      ACC_ASSERT( version >= min_supported_version && version <= max_supported_version, block_log_unsupported_version,
                  "Unsupported version of block log. Block log version is ${version} while code supports version(s) [${min},${max}]",
                  ("version", version)("min", block_log::min_supported_version)("max", block_log::max_supported_version) );
 

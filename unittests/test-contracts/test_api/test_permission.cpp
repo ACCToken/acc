@@ -20,7 +20,7 @@ struct check_auth_msg {
    eosio::name                    permission;
    std::vector<eosio::public_key> pubkeys;
 
-   EOSLIB_SERIALIZE( check_auth_msg, (account)(permission)(pubkeys)  )
+   ACCLIB_SERIALIZE( check_auth_msg, (account)(permission)(pubkeys)  )
 };
 
 void test_permission::check_authorization( uint64_t receiver, uint64_t code, uint64_t action ) {
@@ -51,7 +51,7 @@ struct test_permission_last_used_msg {
    eosio::name permission;
    int64_t     last_used_time;
 
-   EOSLIB_SERIALIZE( test_permission_last_used_msg, (account)(permission)(last_used_time) )
+   ACCLIB_SERIALIZE( test_permission_last_used_msg, (account)(permission)(last_used_time) )
 };
 
 void test_permission::test_permission_last_used( uint64_t /* receiver */, uint64_t code, uint64_t action ) {

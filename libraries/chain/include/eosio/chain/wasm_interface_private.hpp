@@ -43,7 +43,7 @@ namespace eosio { namespace chain {
          else if(vm == wasm_interface::vm_type::wabt)
             runtime_interface = std::make_unique<webassembly::wabt_runtime::wabt_runtime>();
          else
-            EOS_THROW(wasm_exception, "wasm_interface_impl fall through");
+            ACC_THROW(wasm_exception, "wasm_interface_impl fall through");
       }
 
       ~wasm_interface_impl() {
@@ -58,8 +58,8 @@ namespace eosio { namespace chain {
          std::vector<uint8_t> mem_image;
 
          for(const DataSegment& data_segment : module.dataSegments) {
-            EOS_ASSERT(data_segment.baseOffset.type == InitializerExpression::Type::i32_const, wasm_exception, "");
-            EOS_ASSERT(module.memories.defs.size(), wasm_exception, "");
+            ACC_ASSERT(data_segment.baseOffset.type == InitializerExpression::Type::i32_const, wasm_exception, "");
+            ACC_ASSERT(module.memories.defs.size(), wasm_exception, "");
             const U32 base_offset = data_segment.baseOffset.i32;
             const Uptr memory_size = (module.memories.defs[0].type.size.min << IR::numBytesPerPageLog2);
             if(base_offset >= memory_size || base_offset + data_segment.data.size() > memory_size)
@@ -118,9 +118,9 @@ namespace eosio { namespace chain {
                WASM::serialize(stream, module);
                module.userSections.clear();
             } catch(const Serialization::FatalSerializationException& e) {
-               EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
+               ACC_ASSERT(false, wasm_serialization_error, e.message.c_str());
             } catch(const IR::ValidationException& e) {
-               EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
+               ACC_ASSERT(false, wasm_serialization_error, e.message.c_str());
             }
 
             wasm_injections::wasm_binary_injection injector(module);
@@ -132,9 +132,9 @@ namespace eosio { namespace chain {
                WASM::serialize(outstream, module);
                bytes = outstream.getBytes();
             } catch(const Serialization::FatalSerializationException& e) {
-               EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
+               ACC_ASSERT(false, wasm_serialization_error, e.message.c_str());
             } catch(const IR::ValidationException& e) {
-               EOS_ASSERT(false, wasm_serialization_error, e.message.c_str());
+               ACC_ASSERT(false, wasm_serialization_error, e.message.c_str());
             }
 
             wasm_instantiation_cache.modify(it, [&](auto& c) {
@@ -197,7 +197,7 @@ namespace eosio { namespace chain {
    BOOST_PP_SEQ_FOR_EACH(_REGISTER_INTRINSIC, CLS, _WRAPPED_SEQ(MEMBERS))
 
 #define _REGISTER_INJECTED_INTRINSIC(R, CLS, INFO)\
-   BOOST_PP_CAT(BOOST_PP_OVERLOAD(_REGISTER_INTRINSIC, _UNWRAP_SEQ INFO) _EXPAND_ARGS(CLS, EOSIO_INJECTED_MODULE_NAME, INFO), BOOST_PP_EMPTY())
+   BOOST_PP_CAT(BOOST_PP_OVERLOAD(_REGISTER_INTRINSIC, _UNWRAP_SEQ INFO) _EXPAND_ARGS(CLS, ACC_INJECTED_MODULE_NAME, INFO), BOOST_PP_EMPTY())
 
 #define REGISTER_INJECTED_INTRINSICS(CLS, MEMBERS)\
    BOOST_PP_SEQ_FOR_EACH(_REGISTER_INJECTED_INTRINSIC, CLS, _WRAPPED_SEQ(MEMBERS))

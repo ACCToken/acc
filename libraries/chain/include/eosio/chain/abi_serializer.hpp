@@ -535,8 +535,8 @@ namespace impl {
       {
          auto h = ctx.enter_scope();
          const variant_object& vo = v.get_object();
-         EOS_ASSERT(vo.contains("account"), packed_transaction_type_exception, "Missing account");
-         EOS_ASSERT(vo.contains("name"), packed_transaction_type_exception, "Missing name");
+         ACC_ASSERT(vo.contains("account"), packed_transaction_type_exception, "Missing account");
+         ACC_ASSERT(vo.contains("name"), packed_transaction_type_exception, "Missing name");
          from_variant(vo["account"], act.account);
          from_variant(vo["name"], act.name);
 
@@ -573,7 +573,7 @@ namespace impl {
             }
          }
 
-         EOS_ASSERT(valid_empty_data || !act.data.empty(), packed_transaction_type_exception,
+         ACC_ASSERT(valid_empty_data || !act.data.empty(), packed_transaction_type_exception,
                     "Failed to deserialize data for ${account}:${name}", ("account", act.account)("name", act.name));
       }
 
@@ -582,8 +582,8 @@ namespace impl {
       {
          auto h = ctx.enter_scope();
          const variant_object& vo = v.get_object();
-         EOS_ASSERT(vo.contains("signatures"), packed_transaction_type_exception, "Missing signatures");
-         EOS_ASSERT(vo.contains("compression"), packed_transaction_type_exception, "Missing compression");
+         ACC_ASSERT(vo.contains("signatures"), packed_transaction_type_exception, "Missing signatures");
+         ACC_ASSERT(vo.contains("compression"), packed_transaction_type_exception, "Missing compression");
          std::vector<signature_type> signatures;
          packed_transaction::compression_type compression;
          from_variant(vo["signatures"], signatures);
@@ -608,7 +608,7 @@ namespace impl {
                ptrx = packed_transaction( std::move( packed_trx ), std::move( signatures ), std::move( cfd ), compression );
             }
          } else {
-            EOS_ASSERT(vo.contains("transaction"), packed_transaction_type_exception, "Missing transaction");
+            ACC_ASSERT(vo.contains("transaction"), packed_transaction_type_exception, "Missing transaction");
             if( use_packed_cfd ) {
                transaction trx;
                extract( vo["transaction"], trx, resolver, ctx );

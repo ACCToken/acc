@@ -56,7 +56,7 @@ namespace eosio { namespace chain {
    {
       uint64_t h = static_cast<uint64_t>( std::hash<std::string>{}( name ) );
       auto itr = find_intrinsic( whitelisted_intrinsics, h, name );
-      EOS_ASSERT( itr == whitelisted_intrinsics.end(), database_exception,
+      ACC_ASSERT( itr == whitelisted_intrinsics.end(), database_exception,
                   "cannot add intrinsic '${name}' since it already exists in the whitelist",
                   ("name", name)
       );
@@ -72,7 +72,7 @@ namespace eosio { namespace chain {
    {
       uint64_t h = static_cast<uint64_t>( std::hash<std::string>{}( name ) );
       auto itr = find_intrinsic( whitelisted_intrinsics, h, name );
-      EOS_ASSERT( itr != whitelisted_intrinsics.end(), database_exception,
+      ACC_ASSERT( itr != whitelisted_intrinsics.end(), database_exception,
                   "cannot remove intrinsic '${name}' since it does not exist in the whitelist",
                   ("name", name)
       );

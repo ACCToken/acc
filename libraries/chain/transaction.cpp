@@ -55,7 +55,7 @@ void deferred_transaction_generation_context::reflector_init() {
                      "deferred_transaction_generation_context expects FC to support reflector_init" );
 
 
-      EOS_ASSERT( sender != account_name(), ill_formed_deferred_transaction_generation_context,
+      ACC_ASSERT( sender != account_name(), ill_formed_deferred_transaction_generation_context,
                   "Deferred transaction generation context extension must have a non-empty sender account",
       );
 }
@@ -71,7 +71,7 @@ bool transaction_header::verify_reference_block( const block_id_type& reference_
 }
 
 void transaction_header::validate()const {
-   EOS_ASSERT( max_net_usage_words.value < UINT32_MAX / 8UL, transaction_exception,
+   ACC_ASSERT( max_net_usage_words.value < UINT32_MAX / 8UL, transaction_exception,
                "declared max_net_usage_words overflows when expanded to max net usage" );
 }
 
@@ -112,7 +112,7 @@ fc::microseconds transaction::get_signature_keys( const vector<signature_type>& 
    const auto digest_time = fc::time_point::now() - start;
    for(const signature_type& sig : signatures) {
       auto sig_start = fc::time_point::now();
-      EOS_ASSERT( sig_start < deadline, tx_cpu_usage_exceeded, "transaction signature verification executed for too long",
+      ACC_ASSERT( sig_start < deadline, tx_cpu_usage_exceeded, "transaction signature verification executed for too long",
                   ("now", sig_start)("deadline", deadline)("start", start) );
       public_key_type recov;
       const auto& tid = id();
@@ -132,7 +132,7 @@ fc::microseconds transaction::get_signature_keys( const vector<signature_type>& 
       lock.unlock();
       bool successful_insertion = false;
       std::tie(std::ignore, successful_insertion) = recovered_pub_keys.insert(recov);
-      EOS_ASSERT( allow_duplicate_keys || successful_insertion, tx_duplicate_sig,
+      ACC_ASSERT( allow_duplicate_keys || successful_insertion, tx_duplicate_sig,
                   "transaction includes more than one signature signed using the same key associated with public key: ${key}",
                   ("key", recov) );
    }
@@ -160,20 +160,20 @@ vector<transaction_extensions> transaction::validate_and_extract_extensions()con
       const auto& e = transaction_extensions[i];
       auto id = e.first;
 
-      EOS_ASSERT( id >= id_type_lower_bound, invalid_transaction_extension,
+      ACC_ASSERT( id >= id_type_lower_bound, invalid_transaction_extension,
                   "Transaction extensions are not in the correct order (ascending id types required)"
       );
 
       results.emplace_back();
 
       auto match = decompose_t::extract<transaction_extensions_t>( id, e.second, results.back() );
-      EOS_ASSERT( match, invalid_transaction_extension,
+      ACC_ASSERT( match, invalid_transaction_extension,
                   "Transaction extension with id type ${id} is not supported",
                   ("id", id)
       );
 
       if( match->enforce_unique ) {
-         EOS_ASSERT( i == 0 || id > id_type_lower_bound, invalid_transaction_extension,
+         ACC_ASSERT( i == 0 || id > id_type_lower_bound, invalid_transaction_extension,
                      "Transaction extension with id type ${id} is not allowed to repeat",
                      ("id", id)
          );
@@ -205,14 +205,14 @@ signed_transaction::get_signature_keys( const chain_id_type& chain_id, fc::time_
 uint32_t packed_transaction::get_unprunable_size()const {
    uint64_t size = config::fixed_net_overhead_of_packed_trx;
    size += packed_trx.size();
-   EOS_ASSERT( size <= std::numeric_limits<uint32_t>::max(), tx_too_big, "packed_transaction is too big" );
+   ACC_ASSERT( size <= std::numeric_limits<uint32_t>::max(), tx_too_big, "packed_transaction is too big" );
    return static_cast<uint32_t>(size);
 }
 
 uint32_t packed_transaction::get_prunable_size()const {
    uint64_t size = fc::raw::pack_size(signatures);
    size += packed_context_free_data.size();
-   EOS_ASSERT( size <= std::numeric_limits<uint32_t>::max(), tx_too_big, "packed_transaction is too big" );
+   ACC_ASSERT( size <= std::numeric_limits<uint32_t>::max(), tx_too_big, "packed_transaction is too big" );
    return static_cast<uint32_t>(size);
 }
 
@@ -239,7 +239,7 @@ struct read_limiter {
    template<typename Sink>
    size_t write(Sink &sink, const char* s, size_t count)
    {
-      EOS_ASSERT(_total + count <= Limit, tx_decompression_error, "Exceeded maximum decompressed transaction size");
+      ACC_ASSERT(_total + count <= Limit, tx_decompression_error, "Exceeded maximum decompressed transaction size");
       _total += count;
       return bio::write(sink, s, count);
    }
@@ -334,7 +334,7 @@ bytes packed_transaction::get_raw_transaction() const
          case zlib:
             return zlib_decompress(packed_trx);
          default:
-            EOS_THROW(unknown_transaction_compression, "Unknown transaction compression algorithm");
+            ACC_THROW(unknown_transaction_compression, "Unknown transaction compression algorithm");
       }
    } FC_CAPTURE_AND_RETHROW((compression)(packed_trx))
 }
@@ -379,7 +379,7 @@ void packed_transaction::reflector_init()
    // called after construction, but always on the same thread and before packed_transaction passed to any other threads
    static_assert(fc::raw::has_feature_reflector_init_on_unpacked_reflected_types,
                  "FC unpack needs to call reflector_init otherwise unpacked_trx will not be initialized");
-   EOS_ASSERT( unpacked_trx.expiration == time_point_sec(), tx_decompression_error, "packed_transaction already unpacked" );
+   ACC_ASSERT( unpacked_trx.expiration == time_point_sec(), tx_decompression_error, "packed_transaction already unpacked" );
    local_unpack_transaction({});
    local_unpack_context_free_data();
 }
@@ -395,7 +395,7 @@ void packed_transaction::local_unpack_transaction(vector<bytes>&& context_free_d
             unpacked_trx = signed_transaction( zlib_decompress_transaction( packed_trx ), signatures, std::move(context_free_data) );
             break;
          default:
-            EOS_THROW( unknown_transaction_compression, "Unknown transaction compression algorithm" );
+            ACC_THROW( unknown_transaction_compression, "Unknown transaction compression algorithm" );
       }
    } FC_CAPTURE_AND_RETHROW( (compression) )
 }
@@ -403,7 +403,7 @@ void packed_transaction::local_unpack_transaction(vector<bytes>&& context_free_d
 void packed_transaction::local_unpack_context_free_data()
 {
    try {
-      EOS_ASSERT(unpacked_trx.context_free_data.empty(), tx_decompression_error, "packed_transaction.context_free_data not empty");
+      ACC_ASSERT(unpacked_trx.context_free_data.empty(), tx_decompression_error, "packed_transaction.context_free_data not empty");
       switch( compression ) {
          case none:
             unpacked_trx.context_free_data = unpack_context_free_data( packed_context_free_data );
@@ -412,7 +412,7 @@ void packed_transaction::local_unpack_context_free_data()
             unpacked_trx.context_free_data = zlib_decompress_context_free_data( packed_context_free_data );
             break;
          default:
-            EOS_THROW( unknown_transaction_compression, "Unknown transaction compression algorithm" );
+            ACC_THROW( unknown_transaction_compression, "Unknown transaction compression algorithm" );
       }
    } FC_CAPTURE_AND_RETHROW( (compression) )
 }
@@ -428,7 +428,7 @@ void packed_transaction::local_pack_transaction()
             packed_trx = zlib_compress_transaction(unpacked_trx);
             break;
          default:
-            EOS_THROW(unknown_transaction_compression, "Unknown transaction compression algorithm");
+            ACC_THROW(unknown_transaction_compression, "Unknown transaction compression algorithm");
       }
    } FC_CAPTURE_AND_RETHROW((compression))
 }
@@ -444,7 +444,7 @@ void packed_transaction::local_pack_context_free_data()
             packed_context_free_data = zlib_compress_context_free_data(unpacked_trx.context_free_data);
             break;
          default:
-            EOS_THROW(unknown_transaction_compression, "Unknown transaction compression algorithm");
+            ACC_THROW(unknown_transaction_compression, "Unknown transaction compression algorithm");
       }
    } FC_CAPTURE_AND_RETHROW((compression))
 }

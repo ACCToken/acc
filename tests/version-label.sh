@@ -11,16 +11,16 @@ if [[ "$BUILDKITE_TAG" == '' || "$BUILDKITE" != 'true' ]]; then
 fi
 echo 'Tagged build detected, running test.'
 # orient ourselves
-[[ "$EOSIO_ROOT" == '' ]] && EOSIO_ROOT=$(echo $(pwd)/ | grep -ioe '.*/eos/')
-[[ "$EOSIO_ROOT" == '' ]] && EOSIO_ROOT=$(echo $(pwd)/ | grep -ioe '.*/EOSIO/eosio/')
-[[ "$EOSIO_ROOT" == '' ]] && EOSIO_ROOT=$(echo $(pwd)/ | grep -ioe '.*/build/' | sed 's,/build/,,')
-echo "Using EOSIO_ROOT=\"$EOSIO_ROOT\"."
+[[ "$ACC_ROOT" == '' ]] && ACC_ROOT=$(echo $(pwd)/ | grep -ioe '.*/eos/')
+[[ "$ACC_ROOT" == '' ]] && ACC_ROOT=$(echo $(pwd)/ | grep -ioe '.*/ACC/eosio/')
+[[ "$ACC_ROOT" == '' ]] && ACC_ROOT=$(echo $(pwd)/ | grep -ioe '.*/build/' | sed 's,/build/,,')
+echo "Using ACC_ROOT=\"$ACC_ROOT\"."
 # determine expected value
-CMAKE_CACHE="$EOSIO_ROOT/build/CMakeCache.txt"
-CMAKE_LISTS="$EOSIO_ROOT/CMakeLists.txt"
-if [[ -f "$CMAKE_CACHE" && $(cat "$CMAKE_CACHE" | grep -c 'DOXY_EOS_VERSION') > 0 ]]; then
+CMAKE_CACHE="$ACC_ROOT/build/CMakeCache.txt"
+CMAKE_LISTS="$ACC_ROOT/CMakeLists.txt"
+if [[ -f "$CMAKE_CACHE" && $(cat "$CMAKE_CACHE" | grep -c 'DOXY_ACC_VERSION') > 0 ]]; then
     echo "Parsing \"$CMAKE_CACHE\"..."
-    EXPECTED="v$(cat "$CMAKE_CACHE" | grep 'DOXY_EOS_VERSION' | cut -d '=' -f 2)"
+    EXPECTED="v$(cat "$CMAKE_CACHE" | grep 'DOXY_ACC_VERSION' | cut -d '=' -f 2)"
 elif [[ -f "$CMAKE_LISTS" ]]; then
     echo "Parsing \"$CMAKE_LISTS\"..."
     export $(cat $CMAKE_LISTS | grep -ie 'set *( *VERSION_MAJOR' | cut -d '(' -f 2 | cut -d ')' -f 1 | awk '{print $1"="$2}')
@@ -40,7 +40,7 @@ fi
 if [[ "$EXPECTED" == '' ]]; then
     echo 'ERROR: Could not determine expected value for version label!'
     set +e
-    echo "EOSIO_ROOT=\"$EOSIO_ROOT\""
+    echo "ACC_ROOT=\"$ACC_ROOT\""
     echo "CMAKE_CACHE=\"$CMAKE_CACHE\""
     echo "CMAKE_LISTS=\"$CMAKE_LISTS\""
     echo ''
@@ -50,19 +50,19 @@ if [[ "$EXPECTED" == '' ]]; then
     echo "VERSION_SUFFIX=\"$VERSION_SUFFIX\""
     echo "VERSION_FULL=\"$VERSION_FULL\""
     echo ''
-    echo '$ cat "$CMAKE_CACHE" | grep "DOXY_EOS_VERSION"'
-    cat "$CMAKE_CACHE" | grep "DOXY_EOS_VERSION"
+    echo '$ cat "$CMAKE_CACHE" | grep "DOXY_ACC_VERSION"'
+    cat "$CMAKE_CACHE" | grep "DOXY_ACC_VERSION"
     echo '$ pwd'
     pwd
-    echo '$ ls -la "$EOSIO_ROOT"'
-    ls -la "$EOSIO_ROOT"
-    echo '$ ls -la "$EOSIO_ROOT/build"'
-    ls -la "$EOSIO_ROOT/build"
+    echo '$ ls -la "$ACC_ROOT"'
+    ls -la "$ACC_ROOT"
+    echo '$ ls -la "$ACC_ROOT/build"'
+    ls -la "$ACC_ROOT/build"
     exit 1
 fi
 echo "Expecting \"$EXPECTED\"..."
 # get nodeos version
-ACTUAL=$($EOSIO_ROOT/build/bin/nodeos --version) || : # nodeos currently returns -1 for --version
+ACTUAL=$($ACC_ROOT/build/bin/nodeos --version) || : # nodeos currently returns -1 for --version
 # test
 if [[ "$EXPECTED" == "$ACTUAL" ]]; then
     echo 'Passed with \"$ACTUAL\".'

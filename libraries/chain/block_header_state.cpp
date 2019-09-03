@@ -35,7 +35,7 @@ namespace eosio { namespace chain {
       pending_block_header_state result;
 
       if( when != block_timestamp_type() ) {
-        EOS_ASSERT( when > header.timestamp, block_validate_exception, "next block must be in the future" );
+        ACC_ASSERT( when > header.timestamp, block_validate_exception, "next block must be in the future" );
       } else {
         (when = header.timestamp).slot++;
       }
@@ -44,7 +44,7 @@ namespace eosio { namespace chain {
 
       auto itr = producer_to_last_produced.find( prokey.producer_name );
       if( itr != producer_to_last_produced.end() ) {
-        EOS_ASSERT( itr->second < (block_num+1) - num_prev_blocks_to_confirm, producer_double_confirm,
+        ACC_ASSERT( itr->second < (block_num+1) - num_prev_blocks_to_confirm, producer_double_confirm,
                     "producer ${prod} double-confirming known range",
                     ("prod", prokey.producer_name)("num", block_num+1)
                     ("confirmed", num_prev_blocks_to_confirm)("last_produced", itr->second) );
@@ -199,16 +199,16 @@ namespace eosio { namespace chain {
                                                            const vector<digest_type>& )>& validator
    )&&
    {
-      EOS_ASSERT( h.timestamp == timestamp, block_validate_exception, "timestamp mismatch" );
-      EOS_ASSERT( h.previous == previous, unlinkable_block_exception, "previous mismatch" );
-      EOS_ASSERT( h.confirmed == confirmed, block_validate_exception, "confirmed mismatch" );
-      EOS_ASSERT( h.producer == producer, wrong_producer, "wrong producer specified" );
-      EOS_ASSERT( h.schedule_version == active_schedule_version, producer_schedule_exception, "schedule_version in signed block is corrupted" );
+      ACC_ASSERT( h.timestamp == timestamp, block_validate_exception, "timestamp mismatch" );
+      ACC_ASSERT( h.previous == previous, unlinkable_block_exception, "previous mismatch" );
+      ACC_ASSERT( h.confirmed == confirmed, block_validate_exception, "confirmed mismatch" );
+      ACC_ASSERT( h.producer == producer, wrong_producer, "wrong producer specified" );
+      ACC_ASSERT( h.schedule_version == active_schedule_version, producer_schedule_exception, "schedule_version in signed block is corrupted" );
 
       if( h.new_producers ) {
-         EOS_ASSERT( !was_pending_promoted, producer_schedule_exception, "cannot set pending producer schedule in the same block in which pending was promoted to active" );
-         EOS_ASSERT( h.new_producers->version == active_schedule.version + 1, producer_schedule_exception, "wrong producer schedule version specified" );
-         EOS_ASSERT( prev_pending_schedule.schedule.producers.size() == 0, producer_schedule_exception,
+         ACC_ASSERT( !was_pending_promoted, producer_schedule_exception, "cannot set pending producer schedule in the same block in which pending was promoted to active" );
+         ACC_ASSERT( h.new_producers->version == active_schedule.version + 1, producer_schedule_exception, "wrong producer schedule version specified" );
+         ACC_ASSERT( prev_pending_schedule.schedule.producers.size() == 0, producer_schedule_exception,
                     "cannot set new pending producers until last pending is confirmed" );
       }
 
@@ -315,7 +315,7 @@ namespace eosio { namespace chain {
    void block_header_state::sign( const std::function<signature_type(const digest_type&)>& signer ) {
       auto d = sig_digest();
       header.producer_signature = signer( d );
-      EOS_ASSERT( block_signing_key == fc::crypto::public_key( header.producer_signature, d ),
+      ACC_ASSERT( block_signing_key == fc::crypto::public_key( header.producer_signature, d ),
                   wrong_signing_key, "block is signed with unexpected key" );
    }
 
@@ -324,7 +324,7 @@ namespace eosio { namespace chain {
    }
 
    void block_header_state::verify_signee( const public_key_type& signee )const {
-      EOS_ASSERT( block_signing_key == signee, wrong_signing_key,
+      ACC_ASSERT( block_signing_key == signee, wrong_signing_key,
                   "block not signed by expected key",
                   ("block_signing_key", block_signing_key)( "signee", signee ) );
    }

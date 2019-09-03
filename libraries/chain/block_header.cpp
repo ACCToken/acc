@@ -43,20 +43,20 @@ namespace eosio { namespace chain {
          const auto& e = header_extensions[i];
          auto id = e.first;
 
-         EOS_ASSERT( id >= id_type_lower_bound, invalid_block_header_extension,
+         ACC_ASSERT( id >= id_type_lower_bound, invalid_block_header_extension,
                      "Block header extensions are not in the correct order (ascending id types required)"
          );
 
          results.emplace_back();
 
          auto match = decompose_t::extract<block_header_extensions_t>( id, e.second, results.back() );
-         EOS_ASSERT( match, invalid_block_header_extension,
+         ACC_ASSERT( match, invalid_block_header_extension,
                      "Block header extension with id type ${id} is not supported",
                      ("id", id)
          );
 
          if( match->enforce_unique ) {
-            EOS_ASSERT( i == 0 || id > id_type_lower_bound, invalid_block_header_extension,
+            ACC_ASSERT( i == 0 || id > id_type_lower_bound, invalid_block_header_extension,
                         "Block header extension with id type ${id} is not allowed to repeat",
                         ("id", id)
             );
