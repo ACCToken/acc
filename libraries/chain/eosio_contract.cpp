@@ -67,7 +67,7 @@ void validate_authority_precondition( const apply_context& context, const author
 /**
  *  This method is called assuming precondition_system_newaccount succeeds a
  */
-void apply_eosio_newaccount(apply_context& context) {
+void apply_acc_newaccount(apply_context& context) {
    auto create = context.get_action().data_as<newaccount>();
    try {
    context.require_authorization(create.creator);
@@ -125,7 +125,7 @@ void apply_eosio_newaccount(apply_context& context) {
 
 } FC_CAPTURE_AND_RETHROW( (create) ) }
 
-void apply_eosio_setcode(apply_context& context) {
+void apply_acc_setcode(apply_context& context) {
    const auto& cfg = context.control.get_global_properties().configuration;
 
    auto& db = context.db;
@@ -199,7 +199,7 @@ void apply_eosio_setcode(apply_context& context) {
    }
 }
 
-void apply_eosio_setabi(apply_context& context) {
+void apply_acc_setabi(apply_context& context) {
    auto& db  = context.db;
    auto  act = context.get_action().data_as<setabi>();
 
@@ -230,7 +230,7 @@ void apply_eosio_setabi(apply_context& context) {
    }
 }
 
-void apply_eosio_updateauth(apply_context& context) {
+void apply_acc_updateauth(apply_context& context) {
 
    auto update = context.get_action().data_as<updateauth>();
    context.require_authorization(update.account); // only here to mark the single authority on this action as used
@@ -239,8 +239,8 @@ void apply_eosio_updateauth(apply_context& context) {
    auto& db = context.db;
 
    ACC_ASSERT(!update.permission.empty(), action_validate_exception, "Cannot create authority with empty name");
-   ACC_ASSERT( update.permission.to_string().find( "eosio." ) != 0, action_validate_exception,
-               "Permission names that start with 'eosio.' are reserved" );
+   ACC_ASSERT( update.permission.to_string().find( "acc." ) != 0, action_validate_exception,
+               "Permission names that start with 'acc.' are reserved" );
    ACC_ASSERT(update.permission != update.parent, action_validate_exception, "Cannot set an authority as its own parent");
    db.get<account_object, by_name>(update.account);
    ACC_ASSERT(validate(update.auth), action_validate_exception,
@@ -294,7 +294,7 @@ void apply_eosio_updateauth(apply_context& context) {
    }
 }
 
-void apply_eosio_deleteauth(apply_context& context) {
+void apply_acc_deleteauth(apply_context& context) {
 //   context.require_write_lock( config::eosio_auth_scope );
 
    auto remove = context.get_action().data_as<deleteauth>();
@@ -325,7 +325,7 @@ void apply_eosio_deleteauth(apply_context& context) {
 
 }
 
-void apply_eosio_linkauth(apply_context& context) {
+void apply_acc_linkauth(apply_context& context) {
 //   context.require_write_lock( config::eosio_auth_scope );
 
    auto requirement = context.get_action().data_as<linkauth>();
@@ -381,7 +381,7 @@ void apply_eosio_linkauth(apply_context& context) {
   } FC_CAPTURE_AND_RETHROW((requirement))
 }
 
-void apply_eosio_unlinkauth(apply_context& context) {
+void apply_acc_unlinkauth(apply_context& context) {
 //   context.require_write_lock( config::eosio_auth_scope );
 
    auto& db = context.db;
@@ -400,7 +400,7 @@ void apply_eosio_unlinkauth(apply_context& context) {
    db.remove(*link);
 }
 
-void apply_eosio_canceldelay(apply_context& context) {
+void apply_acc_canceldelay(apply_context& context) {
    auto cancel = context.get_action().data_as<canceldelay>();
    context.require_authorization(cancel.canceling_auth.actor); // only here to mark the single authority on this action as used
 
