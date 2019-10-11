@@ -2,9 +2,12 @@
 #include <string>
 #include <fc/reflect/reflect.hpp>
 #include <iosfwd>
+#include <eosio/chain/exceptions.hpp>
 
 namespace eosio { namespace chain {
    using std::string;
+
+   const static std::string name_tail = "@acc";
 
    static constexpr uint64_t char_to_symbol( char c ) {
       if( c >= 'a' && c <= 'z' )
@@ -21,19 +24,35 @@ namespace eosio { namespace chain {
    static constexpr uint64_t string_to_name( const char* str )
    {
       uint64_t name = 0;
+      bool has_tail = false;
       int i = 0;
       for ( ; str[i] && i < 12; ++i) {
           // NOTE: char_to_symbol() returns char type, and without this explicit
           // expansion to uint64 type, the compilation fails at the point of usage
           // of string_to_name(), where the usage requires constant (compile time) expression.
-           name |= (char_to_symbol(str[i]) & 0x1f) << (64 - 5 * (i + 1));
+          if(str[i] == '@'){
+              has_tail = string(str).find(name_tail) == i;
+              ACC_ASSERT(!str[i + 4], name_type_exception, "Name has wrong format (${name}) ", ("name", string(str)));
+              for (int j = i ; j < 12; ++j) {
+                  name |= 0 << (64 - 5 * (j + 1));
+              }
+
+              break;
+          }
+
+          name |= (char_to_symbol(str[i]) & 0x1f) << (64 - 5 * (i + 1));
        }
 
-      // The for-loop encoded up to 60 high bits into uint64 'name' variable,
-      // if (strlen(str) > 12) then encode str[12] into the low (remaining)
-      // 4 bits of 'name'
-      if (i == 12)
+
+      if(has_tail) {
+          name |= 0x0F;
+      }else if(i==12) {
+          // The for-loop encoded up to 60 high bits into uint64 'name' variable,
+          // if (strlen(str) > 12) then encode str[12] into the low (remaining)
+          // 4 bits of 'name'
           name |= char_to_symbol(str[12]) & 0x0F;
+      }
+
       return name;
    }
 
@@ -56,6 +75,8 @@ namespace eosio { namespace chain {
       explicit operator string()const;
 
       string to_string() const { return string(*this); }
+
+      size_t get_length( const char* str, bool* has_tail );
 
       name& operator=( uint64_t v ) {
          value = v;

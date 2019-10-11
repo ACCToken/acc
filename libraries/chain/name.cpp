@@ -7,12 +7,29 @@
 namespace eosio { namespace chain { 
 
    void name::set( const char* str ) {
-      const auto len = strnlen(str, 14);
-      ACC_ASSERT(len <= 13, name_type_exception, "Name is longer than 13 characters (${name}) ", ("name", string(str)));
+      bool has_tail;
+      const auto len = get_length(str, &has_tail);
+
+      ACC_ASSERT(len <= 13 || (has_tail && len <= 17), name_type_exception, "Name is longer than 13 characters (${name}) ", ("name", string(str)));
       value = string_to_name(str);
       ACC_ASSERT(to_string() == string(str), name_type_exception,
                  "Name not properly normalized (name: ${name}, normalized: ${normalized}) ",
                  ("name", string(str))("normalized", to_string()));
+   }
+
+   size_t name::get_length(const char *str, bool *has_tail) {
+       const auto tail_len = strnlen(name_tail.c_str(), 5);
+       const auto len = strnlen(str, 14 + tail_len);
+
+       //ilog("name get_length ${name_tail} ${len} ${tail_len}",("name_tail",name_tail) ("len",len) ("tail_len",tail_len));
+       if(len < tail_len + 1)
+       {
+           *has_tail = false;
+       }else{
+           *has_tail = (string(str).compare(len-tail_len-1, tail_len, name_tail) != 0);
+       }
+
+       return len;
    }
 
    // keep in sync with name::to_string() in contract definition for name
@@ -21,15 +38,30 @@ namespace eosio { namespace chain {
 
       string str(13,'.');
 
+      bool has_tail = false;
       uint64_t tmp = value;
       for( uint32_t i = 0; i <= 12; ++i ) {
-         char c = charmap[tmp & (i == 0 ? 0x0f : 0x1f)];
-         str[12-i] = c;
-         tmp >>= (i == 0 ? 4 : 5);
+          if(i==0){
+              if((tmp & 0x0f) ==0x0f){
+                  has_tail = true;
+                  str[12-i] = '.';
+              }
+              else{
+                  char c = charmap[tmp & 0x0f];
+                  str[12-i] = c;
+              }
+              tmp >>= 4;
+          }else{
+              char c = charmap[tmp & 0x1f];
+              str[12-i] = c;
+              tmp >>= 5;
+          }
       }
 
       boost::algorithm::trim_right_if( str, []( char c ){ return c == '.'; } );
-      return str;
+
+      //ilog("name string ${has_tail} ${str} ${name_tail}",("has_tail",has_tail)("str",str)("name_tail",name_tail));
+      return has_tail ? str + name_tail : str;
    }
 
 } } /// eosio::chain
