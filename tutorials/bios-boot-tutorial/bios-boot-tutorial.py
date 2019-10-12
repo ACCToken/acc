@@ -45,6 +45,7 @@ def retry(args):
         logFile.write(args + '\n')
         if subprocess.call(args, shell=True):
             print('*** Retry')
+            sleep(2)
         else:
             break
 
@@ -92,7 +93,7 @@ def importKeys():
             run(args.cleos + 'wallet import --private-key ' + key)
 
 def startNode(nodeIndex, account):
-    dir = args.nodes_dir + ('%02d-' % nodeIndex) + account['name'] + '/'
+    dir = args.nodeos_dir + ('%02d-' % nodeIndex) + account['name'] + '/'
     run('rm -rf ' + dir)
     run('mkdir -p ' + dir)
     otherOpts = ''.join(list(map(lambda i: '    --p2p-peer-address localhost:' + str(9000 + i), range(nodeIndex))))
@@ -102,23 +103,14 @@ def startNode(nodeIndex, account):
     )
     cmd = (
         args.nodeos +
-        '    --max-irreversible-block-age -1'
-        '    --contracts-console'
-        '    --genesis-json ' + os.path.abspath(args.genesis) +
-        '    --blocks-dir ' + os.path.abspath(dir) + '/blocks'
-        '    --config-dir ' + os.path.abspath(dir) +
+        '    --disable-replay-opts'
+        '    --config-dir /Users/astaldo/Projects/ACC/acc/data_debug/config/'
         '    --data-dir ' + os.path.abspath(dir) +
-        '    --chain-state-db-size-mb 1024'
         '    --http-server-address 127.0.0.1:' + str(8000 + nodeIndex) +
         '    --p2p-listen-endpoint 127.0.0.1:' + str(9000 + nodeIndex) +
-        '    --max-clients ' + str(maxClients) +
-        '    --p2p-max-nodes-per-host ' + str(maxClients) +
-        '    --enable-stale-production'
+        '    --state-history-endpoint 127.0.0.1:' + str(7000 + nodeIndex) +
         '    --producer-name ' + account['name'] +
-        '    --private-key \'["' + account['pub'] + '","' + account['pvt'] + '"]\''
-        '    --plugin eosio::http_plugin'
-        '    --plugin eosio::chain_api_plugin'
-        '    --plugin eosio::producer_plugin' +
+        '    --signature-provider ' + account['pub'] + '=KEY:' + account['pvt'] +
         otherOpts)
     with open(dir + 'stderr', mode='w') as f:
         f.write(cmd + '\n\n')
@@ -283,34 +275,51 @@ def stepStartWallet():
     importKeys()
 def stepStartBoot():
     startNode(0, {'name': 'acc', 'pvt': args.private_key, 'pub': args.public_key})
-    sleep(1.5)
+    sleep(2)
 def stepInstallSystemContracts():
-    run(args.cleos + 'set contract acc.token ' + args.contracts_dir + '/acc.token/')
-    run(args.cleos + 'set contract acc.msig ' + args.contracts_dir + '/acc.msig/')
+    run(args.cleos + 'set contract acc.token ' + args.contracts_dir + '/eosio.token/')
+    run(args.cleos + 'set contract acc.msig ' + args.contracts_dir + '/eosio.msig/')
+    sleep(2)
 def stepCreateTokens():
-    run(args.cleos + 'push action acc.token create \'["acc", "10000000000.0000 %s"]\' -p acc.token' % (args.symbol))
+    retry(args.cleos + 'push action acc.token create \'["acc", "10000000000.0000 %s"]\' -p acc.token' % (args.symbol))
     totalAllocation = allocateFunds(0, len(accounts))
     run(args.cleos + 'push action acc.token issue \'["acc", "%s", "memo"]\' -p acc' % intToCurrency(totalAllocation))
-    sleep(1)
+    sleep(2)
+
+def stepActivateFeature():
+    run('curl -X POST http://127.0.0.1:%d/v1/producer/schedule_protocol_feature_activations -d \'{"protocol_features_to_activate": ["0ec7e080177b2c02b278d5088611686b49d739925a92d9bfcacd7fc6b74053bd"]}\'' % args.http_port)
 def stepSetSystemContract():
+    sleep(2)
     retry(args.cleos + 'set contract acc ' + args.contracts_dir + '/eosio.system/')
-    sleep(1)
-    run(args.cleos + 'push action acc setpriv' + jsonArg(['acc.msig', 1]) + '-p acc@active')
+    sleep(2)
+    run(args.cleos + 'push action acc activate \'["f0af56d2c5a48d60a4a5b5c903edfb7db3a736a94ed589d0b797df33ff9d3e1d"]\' -p acc') # GET_SENDER
+    run(args.cleos + 'push action acc activate \'["2652f5f96006294109b3dd0bbde63693f55324af452b799ee137a81a905eed25"]\' -p acc') # FORWARD_SETCODE
+    run(args.cleos + 'push action acc activate \'["8ba52fe7a3956c5cd3a656a3174b931d3bb2abb45578befc59f283ecd816a405"]\' -p acc') # ONLY_BILL_FIRST_AUTHORIZER
+    run(args.cleos + 'push action acc activate \'["ad9e3d8f650687709fd68f4b90b41f7d825a365b02c23a636cef88ac2ac00c43"]\' -p acc') # RESTRICT_ACTION_TO_SELF
+    run(args.cleos + 'push action acc activate \'["68dcaa34c0517d19666e6b33add67351d8c5f69e999ca1e37931bc410a297428"]\' -p acc') # DISALLOW_EMPTY_PRODUCER_SCHEDULE
+    run(args.cleos + 'push action acc activate \'["e0fb64b1085cc5538970158d05a009c24e276fb94e1a0bf6a528b48fbc4ff526"]\' -p acc') # FIX_LINKAUTH_RESTRICTION
+    run(args.cleos + 'push action acc activate \'["ef43112c6543b88db2283a2e077278c315ae2c84719a8b25f25cc88565fbea99"]\' -p acc') # REPLACE_DEFERRED
+    run(args.cleos + 'push action acc activate \'["4a90c00d55454dc5b059055ca213579c6ea856967712a56017487886a4d4cc0f"]\' -p acc') # NO_DUPLICATE_DEFERRED_ID
+    run(args.cleos + 'push action acc activate \'["1a99a59d87e06e09ec5b028a9cbb7749b4a5ad8819004365d02dc4379a8b7241"]\' -p acc') # ONLY_LINK_TO_EXISTING_PERMISSION
+    run(args.cleos + 'push action acc activate \'["4e7bf348da00a945489b2a681749eb56f5de00b900014e137ddae39f48f69d67"]\' -p acc') # RAM_RESTRICTIONS
+    sleep(2)
+    retry(args.cleos + 'push action acc setpriv' + jsonArg(['acc.msig', 1]) + '-p acc@active')
+    sleep(2)
 def stepInitSystemContract():
     run(args.cleos + 'push action acc init' + jsonArg(['0', '4,' + args.symbol]) + '-p acc@active')
-    sleep(1)
+    sleep(2)
 def stepCreateStakedAccounts():
     createStakedAccounts(0, len(accounts))
 def stepRegProducers():
     regProducers(firstProducer, firstProducer + numProducers)
-    sleep(1)
+    sleep(2)
     listProducers()
 def stepStartProducers():
     startProducers(firstProducer, firstProducer + numProducers)
     sleep(args.producer_sync_delay)
 def stepVote():
     vote(0, 0 + args.num_voters)
-    sleep(1)
+    sleep(2)
     listProducers()
     sleep(5)
 def stepProxyVotes():
@@ -323,7 +332,7 @@ def stepTransfer():
     while True:
         randomTransfer(0, args.num_senders)
 def stepLog():
-    run('tail -n 60 ' + args.nodes_dir + '00-acc/stderr')
+    run('tail -n 60 ' + args.nodeos_dir + '00-acc/stderr')
 
 # Command Line Arguments
 
@@ -336,6 +345,7 @@ commands = [
     ('s', 'sys',                createSystemAccounts,       True,    "Create system accounts (acc.*)"),
     ('c', 'contracts',          stepInstallSystemContracts, True,    "Install system contracts (token, msig)"),
     ('t', 'tokens',             stepCreateTokens,           True,    "Create tokens"),
+    ('A', 'activate',           stepActivateFeature,        True,    "Activate feature"),
     ('S', 'sys-contract',       stepSetSystemContract,      True,    "Set system contract"),
     ('I', 'init-sys-contract',  stepInitSystemContract,     True,    "Initialiaze system contract"),
     ('T', 'stake',              stepCreateStakedAccounts,   True,    "Create staked accounts"),
@@ -350,13 +360,13 @@ commands = [
     ('l', 'log',                stepLog,                    True,    "Show tail of node's log"),
 ]
 
-parser.add_argument('--public-key', metavar='', help="ACC Public Key", default='ACC6ftVMKkEVR1CbiaGE1rypyXhR792pEnDoxLP3ALXPqgEtGbX3o', dest="public_key")
-parser.add_argument('--private-Key', metavar='', help="ACC Private Key", default='5K463ynhZoCDDa4RDcr63cUwWLTnKqmdcoTKTHBjqoKfv4u5V7p', dest="private_key")
+parser.add_argument('--public-key', metavar='', help="ACC Public Key", default='ACC6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV', dest="public_key")
+parser.add_argument('--private-key', metavar='', help="ACC Private Key", default='5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3', dest="private_key")
 parser.add_argument('--cleos', metavar='', help="Cleos command", default='../../build/programs/cleos/cleos --wallet-url http://127.0.0.1:6666 ')
 parser.add_argument('--nodeos', metavar='', help="Path to nodeos binary", default='../../build/programs/nodeos/nodeos')
 parser.add_argument('--keosd', metavar='', help="Path to keosd binary", default='../../build/programs/keosd/keosd')
 parser.add_argument('--contracts-dir', metavar='', help="Path to contracts directory", default='../../build/contracts/')
-parser.add_argument('--nodes-dir', metavar='', help="Path to nodes directory", default='./nodes/')
+parser.add_argument('--nodeos-dir', metavar='', help="Path to nodes directory", default='./nodes/')
 parser.add_argument('--genesis', metavar='', help="Path to genesis.json", default="./genesis.json")
 parser.add_argument('--wallet-dir', metavar='', help="Path to wallet directory", default='./wallet/')
 parser.add_argument('--log-path', metavar='', help="Path to log file", default='./output.log')
@@ -386,7 +396,7 @@ for (flag, command, function, inAll, help) in commands:
         
 args = parser.parse_args()
 
-args.cleos += '--url http://127.0.0.1:%d ' % args.http_port
+args.cleos += ' --url http://127.0.0.1:%d ' % args.http_port
 
 logFile = open(args.log_path, 'a')
 
