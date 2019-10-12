@@ -103,14 +103,26 @@ def startNode(nodeIndex, account):
     )
     cmd = (
         args.nodeos +
-        '    --disable-replay-opts'
-        '    --config-dir /Users/astaldo/Projects/ACC/acc/data_debug/config/'
+        '    --max-irreversible-block-age -1'
+        '    --contracts-console'
+        '    --genesis-json ' + os.path.abspath(args.genesis) +
+        '    --blocks-dir ' + os.path.abspath(dir) + '/blocks'
+        '    --config-dir ' + os.path.abspath(dir) +
         '    --data-dir ' + os.path.abspath(dir) +
+        '    --chain-state-db-size-mb 1024'
         '    --http-server-address 127.0.0.1:' + str(8000 + nodeIndex) +
         '    --p2p-listen-endpoint 127.0.0.1:' + str(9000 + nodeIndex) +
-        '    --state-history-endpoint 127.0.0.1:' + str(7000 + nodeIndex) +
+        '    --max-clients ' + str(maxClients) +
+        '    --p2p-max-nodes-per-host ' + str(maxClients) +
+        '    --enable-stale-production'
+        '    --max-transaction-time 10000'
         '    --producer-name ' + account['name'] +
         '    --signature-provider ' + account['pub'] + '=KEY:' + account['pvt'] +
+        '    --plugin eosio::http_plugin'
+        '    --plugin eosio::chain_plugin'
+        '    --plugin eosio::chain_api_plugin'
+        '    --plugin eosio::producer_plugin'
+        '    --plugin eosio::producer_api_plugin' +
         otherOpts)
     with open(dir + 'stderr', mode='w') as f:
         f.write(cmd + '\n\n')
