@@ -7,7 +7,7 @@
 namespace eosio { namespace chain {
    using std::string;
 
-   const static std::string name_tail = "@acc";
+   const static std::string name_tail = "#acc";
 
    static constexpr uint64_t char_to_symbol( char c ) {
       if( c >= 'a' && c <= 'z' )
@@ -30,7 +30,7 @@ namespace eosio { namespace chain {
           // NOTE: char_to_symbol() returns char type, and without this explicit
           // expansion to uint64 type, the compilation fails at the point of usage
           // of string_to_name(), where the usage requires constant (compile time) expression.
-          if(str[i] == '@'){
+          if(str[i] == '#'){
               has_tail = string(str).find(name_tail) == i;
               ACC_ASSERT(!str[i + 4], name_type_exception, "Name has wrong format (${name}) ", ("name", string(str)));
               for (int j = i ; j < 12; ++j) {
