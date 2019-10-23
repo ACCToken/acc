@@ -13,8 +13,8 @@
 
 pushd $ACC_HOME
 
-if [ ! -f programs/nodeos/nodeos ]; then
-    echo unable to locate binary for nodeos
+if [ ! -f programs/nodeacc/nodeacc ]; then
+    echo unable to locate binary for nodeacc
     exit 1
 fi
 

@@ -37,7 +37,7 @@ Minimal command line to launch the script below, make sure you replace `ACC_CONT
 $ cd ~
 $ git clone https://github.com/ACC/eos.git
 $ cd ./eos/tutorials/bios-boot-tutorial/
-$ python3 bios-boot-tutorial.py --cleos="cleos --wallet-url http://127.0.0.1:6666 " --nodeos=nodeos --keosd=keosd --contracts-dir="/ACC_CONTRACTS_DIRECTORY/" -a
+$ python3 bios-boot-tutorial.py --clacc="clacc --wallet-url http://127.0.0.1:6666 " --nodeacc=nodeacc --kaccd=kaccd --contracts-dir="/ACC_CONTRACTS_DIRECTORY/" -a
 
 ```
 

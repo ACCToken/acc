@@ -10,7 +10,7 @@ if [ "$PWD" != "$ACC_HOME" ]; then
     exit -1
 fi
 
-prog=nodeos
+prog=nodeacc
 
 DD=var/lib/node_$ACC_NODE
 runtest=`cat $DD/$prog.pid`

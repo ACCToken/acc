@@ -6,8 +6,8 @@
 
 connected="0"
 
-rundir=programs/nodeos
-prog=nodeos
+rundir=programs/nodeacc
+prog=nodeacc
 
 # Quote any args that are "*", so they are not expanded
 qargs=`echo "$*" | sed -e 's/ \* / "*" /' -e 's/ \*$/ "*"/'`
@@ -18,7 +18,7 @@ if [ "$PWD" != "$ACC_HOME" ]; then
 fi
 
 if [ ! -e $rundir/$prog ]; then
-    echo unable to locate binary for nodeos
+    echo unable to locate binary for nodeacc
     exit -1
 fi
 

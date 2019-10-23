@@ -6,7 +6,7 @@ ACC_PREFIX=${PREFIX}/${SUBPREFIX}
 mkdir -p ${PREFIX}/bin/
 #mkdir -p ${PREFIX}/lib/cmake/${PROJECT}
 mkdir -p ${ACC_PREFIX}/bin
-mkdir -p ${ACC_PREFIX}/licenses/eosio
+mkdir -p ${ACC_PREFIX}/licenses/acc
 #mkdir -p ${ACC_PREFIX}/include
 #mkdir -p ${ACC_PREFIX}/lib/cmake/${PROJECT}
 #mkdir -p ${ACC_PREFIX}/cmake
@@ -16,7 +16,7 @@ mkdir -p ${ACC_PREFIX}/licenses/eosio
 cp -R ${BUILD_DIR}/bin/* ${ACC_PREFIX}/bin  || exit 1
 
 # install licenses
-cp -R ${BUILD_DIR}/licenses/eosio/* ${ACC_PREFIX}/licenses || exit 1
+cp -R ${BUILD_DIR}/licenses/acc/* ${ACC_PREFIX}/licenses || exit 1
 
 # install libraries
 #cp -R ${BUILD_DIR}/lib/* ${ACC_PREFIX}/lib

@@ -71,12 +71,12 @@ def sleep(t):
 def startWallet():
     run('rm -rf ' + os.path.abspath(args.wallet_dir))
     run('mkdir -p ' + os.path.abspath(args.wallet_dir))
-    background(args.keosd + ' --unlock-timeout %d --http-server-address 127.0.0.1:6666 --wallet-dir %s' % (unlockTimeout, os.path.abspath(args.wallet_dir)))
+    background(args.kaccd + ' --unlock-timeout %d --http-server-address 127.0.0.1:6666 --wallet-dir %s' % (unlockTimeout, os.path.abspath(args.wallet_dir)))
     sleep(.4)
-    run(args.cleos + 'wallet create --to-console')
+    run(args.clacc + 'wallet create --to-console')
 
 def importKeys():
-    run(args.cleos + 'wallet import --private-key ' + args.private_key)
+    run(args.clacc + 'wallet import --private-key ' + args.private_key)
     keys = {}
     for a in accounts:
         key = a['pvt']
@@ -84,16 +84,16 @@ def importKeys():
             if len(keys) >= args.max_user_keys:
                 break
             keys[key] = True
-            run(args.cleos + 'wallet import --private-key ' + key)
+            run(args.clacc + 'wallet import --private-key ' + key)
     for i in range(firstProducer, firstProducer + numProducers):
         a = accounts[i]
         key = a['pvt']
         if not key in keys:
             keys[key] = True
-            run(args.cleos + 'wallet import --private-key ' + key)
+            run(args.clacc + 'wallet import --private-key ' + key)
 
 def startNode(nodeIndex, account):
-    dir = args.nodeos_dir + ('%02d-' % nodeIndex) + account['name'] + '/'
+    dir = args.nodeacc_dir + ('%02d-' % nodeIndex) + account['name'] + '/'
     run('rm -rf ' + dir)
     run('mkdir -p ' + dir)
     otherOpts = ''.join(list(map(lambda i: '    --p2p-peer-address localhost:' + str(9000 + i), range(nodeIndex))))
@@ -102,7 +102,7 @@ def startNode(nodeIndex, account):
         '    --plugin eosio::history_api_plugin'
     )
     cmd = (
-        args.nodeos +
+        args.nodeacc +
         '    --max-irreversible-block-age -1'
         '    --contracts-console'
         '    --genesis-json ' + os.path.abspath(args.genesis) +
@@ -134,7 +134,7 @@ def startProducers(b, e):
 
 def createSystemAccounts():
     for a in systemAccounts:
-        run(args.cleos + 'create account acc ' + a + ' ' + args.public_key)
+        run(args.clacc + 'create account acc ' + a + ' ' + args.public_key)
 
 def intToCurrency(i):
     return '%d.%04d %s' % (i // 10000, i % 10000, args.symbol)
@@ -173,18 +173,18 @@ def createStakedAccounts(b, e):
         stakeCpu = stake - stakeNet
         print('%s: total funds=%s, ram=%s, net=%s, cpu=%s, unstaked=%s' % (a['name'], intToCurrency(a['funds']), intToCurrency(ramFunds), intToCurrency(stakeNet), intToCurrency(stakeCpu), intToCurrency(unstaked)))
         assert(funds == ramFunds + stakeNet + stakeCpu + unstaked)
-        retry(args.cleos + 'system newaccount --transfer acc %s %s --stake-net "%s" --stake-cpu "%s" --buy-ram "%s"   ' %
+        retry(args.clacc + 'system newaccount --transfer acc %s %s --stake-net "%s" --stake-cpu "%s" --buy-ram "%s"   ' %
             (a['name'], a['pub'], intToCurrency(stakeNet), intToCurrency(stakeCpu), intToCurrency(ramFunds)))
         if unstaked:
-            retry(args.cleos + 'transfer acc %s "%s"' % (a['name'], intToCurrency(unstaked)))
+            retry(args.clacc + 'transfer acc %s "%s"' % (a['name'], intToCurrency(unstaked)))
 
 def regProducers(b, e):
     for i in range(b, e):
         a = accounts[i]
-        retry(args.cleos + 'system regproducer ' + a['name'] + ' ' + a['pub'] + ' https://' + a['name'] + '.com' + '/' + a['pub'])
+        retry(args.clacc + 'system regproducer ' + a['name'] + ' ' + a['pub'] + ' https://' + a['name'] + '.com' + '/' + a['pub'])
 
 def listProducers():
-    run(args.cleos + 'system listproducers')
+    run(args.clacc + 'system listproducers')
 
 def vote(b, e):
     for i in range(b, e):
@@ -194,27 +194,27 @@ def vote(b, e):
             k = numProducers - 1
         prods = random.sample(range(firstProducer, firstProducer + numProducers), k)
         prods = ' '.join(map(lambda x: accounts[x]['name'], prods))
-        retry(args.cleos + 'system voteproducer prods ' + voter + ' ' + prods)
+        retry(args.clacc + 'system voteproducer prods ' + voter + ' ' + prods)
 
 def claimRewards():
-    table = getJsonOutput(args.cleos + 'get table acc acc producers -l 100')
+    table = getJsonOutput(args.clacc + 'get table acc acc producers -l 100')
     times = []
     for row in table['rows']:
         if row['unpaid_blocks'] and not row['last_claim_time']:
-            times.append(getJsonOutput(args.cleos + 'system claimrewards -j ' + row['owner'])['processed']['elapsed'])
+            times.append(getJsonOutput(args.clacc + 'system claimrewards -j ' + row['owner'])['processed']['elapsed'])
     print('Elapsed time for claimrewards:', times)
 
 def proxyVotes(b, e):
     vote(firstProducer, firstProducer + 1)
     proxy = accounts[firstProducer]['name']
-    retry(args.cleos + 'system regproxy ' + proxy)
+    retry(args.clacc + 'system regproxy ' + proxy)
     sleep(1.0)
     for i in range(b, e):
         voter = accounts[i]['name']
-        retry(args.cleos + 'system voteproducer proxy ' + voter + ' ' + proxy)
+        retry(args.clacc + 'system voteproducer proxy ' + voter + ' ' + proxy)
 
 def updateAuth(account, permission, parent, controller):
-    run(args.cleos + 'push action acc updateauth' + jsonArg({
+    run(args.clacc + 'push action acc updateauth' + jsonArg({
         'account': account,
         'permission': permission,
         'parent': parent,
@@ -231,7 +231,7 @@ def resign(account, controller):
     updateAuth(account, 'owner', '', controller)
     updateAuth(account, 'active', 'owner', controller)
     sleep(1)
-    run(args.cleos + 'get account ' + account)
+    run(args.clacc + 'get account ' + account)
 
 def randomTransfer(b, e):
     for j in range(20):
@@ -239,7 +239,7 @@ def randomTransfer(b, e):
         dest = src
         while dest == src:
             dest = accounts[random.randint(b, e - 1)]['name']
-        run(args.cleos + 'transfer -f ' + src + ' ' + dest + ' "0.0001 ' + args.symbol + '"' + ' || true')
+        run(args.clacc + 'transfer -f ' + src + ' ' + dest + ' "0.0001 ' + args.symbol + '"' + ' || true')
 
 def msigProposeReplaceSystem(proposer, proposalName):
     requestedPermissions = []
@@ -248,20 +248,20 @@ def msigProposeReplaceSystem(proposer, proposalName):
     trxPermissions = [{'actor': 'acc', 'permission': 'active'}]
     with open(fastUnstakeSystem, mode='rb') as f:
         setcode = {'account': 'acc', 'vmtype': 0, 'vmversion': 0, 'code': f.read().hex()}
-    run(args.cleos + 'multisig propose ' + proposalName + jsonArg(requestedPermissions) + 
+    run(args.clacc + 'multisig propose ' + proposalName + jsonArg(requestedPermissions) + 
         jsonArg(trxPermissions) + 'acc setcode' + jsonArg(setcode) + ' -p ' + proposer)
 
 def msigApproveReplaceSystem(proposer, proposalName):
     for i in range(firstProducer, firstProducer + numProducers):
-        run(args.cleos + 'multisig approve ' + proposer + ' ' + proposalName +
+        run(args.clacc + 'multisig approve ' + proposer + ' ' + proposalName +
             jsonArg({'actor': accounts[i]['name'], 'permission': 'active'}) +
             '-p ' + accounts[i]['name'])
 
 def msigExecReplaceSystem(proposer, proposalName):
-    retry(args.cleos + 'multisig exec ' + proposer + ' ' + proposalName + ' -p ' + proposer)
+    retry(args.clacc + 'multisig exec ' + proposer + ' ' + proposalName + ' -p ' + proposer)
 
 def msigReplaceSystem():
-    run(args.cleos + 'push action acc buyrambytes' + jsonArg(['acc', accounts[0]['name'], 200000]) + '-p acc')
+    run(args.clacc + 'push action acc buyrambytes' + jsonArg(['acc', accounts[0]['name'], 200000]) + '-p acc')
     sleep(1)
     msigProposeReplaceSystem(accounts[0]['name'], 'fast.unstake')
     sleep(1)
@@ -271,7 +271,7 @@ def msigReplaceSystem():
 def produceNewAccounts():
     with open('newusers', 'w') as f:
         for i in range(120_000, 200_000):
-            x = getOutput(args.cleos + 'create key --to-console')
+            x = getOutput(args.clacc + 'create key --to-console')
             r = re.match('Private key: *([^ \n]*)\nPublic key: *([^ \n]*)', x, re.DOTALL | re.MULTILINE)
             name = 'user'
             for j in range(7, -1, -1):
@@ -280,7 +280,7 @@ def produceNewAccounts():
             f.write('        {"name":"%s", "pvt":"%s", "pub":"%s"},\n' % (name, r[1], r[2]))
 
 def stepKillAll():
-    run('killall keosd nodeos || true')
+    run('killall kaccd nodeacc || true')
     sleep(1.5)
 def stepStartWallet():
     startWallet()
@@ -289,36 +289,36 @@ def stepStartBoot():
     startNode(0, {'name': 'acc', 'pvt': args.private_key, 'pub': args.public_key})
     sleep(2)
 def stepInstallSystemContracts():
-    run(args.cleos + 'set contract acc.token ' + args.contracts_dir + '/eosio.token/')
-    run(args.cleos + 'set contract acc.msig ' + args.contracts_dir + '/eosio.msig/')
+    run(args.clacc + 'set contract acc.token ' + args.contracts_dir + '/eosio.token/')
+    run(args.clacc + 'set contract acc.msig ' + args.contracts_dir + '/eosio.msig/')
     sleep(2)
 def stepCreateTokens():
-    retry(args.cleos + 'push action acc.token create \'["acc", "10000000000.0000 %s"]\' -p acc.token' % (args.symbol))
+    retry(args.clacc + 'push action acc.token create \'["acc", "10000000000.0000 %s"]\' -p acc.token' % (args.symbol))
     totalAllocation = allocateFunds(0, len(accounts))
-    run(args.cleos + 'push action acc.token issue \'["acc", "%s", "memo"]\' -p acc' % intToCurrency(totalAllocation))
+    run(args.clacc + 'push action acc.token issue \'["acc", "%s", "memo"]\' -p acc' % intToCurrency(totalAllocation))
     sleep(2)
 
 def stepActivateFeature():
     run('curl -X POST http://127.0.0.1:%d/v1/producer/schedule_protocol_feature_activations -d \'{"protocol_features_to_activate": ["0ec7e080177b2c02b278d5088611686b49d739925a92d9bfcacd7fc6b74053bd"]}\'' % args.http_port)
 def stepSetSystemContract():
     sleep(2)
-    retry(args.cleos + 'set contract acc ' + args.contracts_dir + '/eosio.system/')
+    retry(args.clacc + 'set contract acc ' + args.contracts_dir + '/eosio.system/')
     sleep(2)
-    run(args.cleos + 'push action acc activate \'["f0af56d2c5a48d60a4a5b5c903edfb7db3a736a94ed589d0b797df33ff9d3e1d"]\' -p acc') # GET_SENDER
-    run(args.cleos + 'push action acc activate \'["2652f5f96006294109b3dd0bbde63693f55324af452b799ee137a81a905eed25"]\' -p acc') # FORWARD_SETCODE
-    run(args.cleos + 'push action acc activate \'["8ba52fe7a3956c5cd3a656a3174b931d3bb2abb45578befc59f283ecd816a405"]\' -p acc') # ONLY_BILL_FIRST_AUTHORIZER
-    run(args.cleos + 'push action acc activate \'["ad9e3d8f650687709fd68f4b90b41f7d825a365b02c23a636cef88ac2ac00c43"]\' -p acc') # RESTRICT_ACTION_TO_SELF
-    run(args.cleos + 'push action acc activate \'["68dcaa34c0517d19666e6b33add67351d8c5f69e999ca1e37931bc410a297428"]\' -p acc') # DISALLOW_EMPTY_PRODUCER_SCHEDULE
-    run(args.cleos + 'push action acc activate \'["e0fb64b1085cc5538970158d05a009c24e276fb94e1a0bf6a528b48fbc4ff526"]\' -p acc') # FIX_LINKAUTH_RESTRICTION
-    run(args.cleos + 'push action acc activate \'["ef43112c6543b88db2283a2e077278c315ae2c84719a8b25f25cc88565fbea99"]\' -p acc') # REPLACE_DEFERRED
-    run(args.cleos + 'push action acc activate \'["4a90c00d55454dc5b059055ca213579c6ea856967712a56017487886a4d4cc0f"]\' -p acc') # NO_DUPLICATE_DEFERRED_ID
-    run(args.cleos + 'push action acc activate \'["1a99a59d87e06e09ec5b028a9cbb7749b4a5ad8819004365d02dc4379a8b7241"]\' -p acc') # ONLY_LINK_TO_EXISTING_PERMISSION
-    run(args.cleos + 'push action acc activate \'["4e7bf348da00a945489b2a681749eb56f5de00b900014e137ddae39f48f69d67"]\' -p acc') # RAM_RESTRICTIONS
+    run(args.clacc + 'push action acc activate \'["f0af56d2c5a48d60a4a5b5c903edfb7db3a736a94ed589d0b797df33ff9d3e1d"]\' -p acc') # GET_SENDER
+    run(args.clacc + 'push action acc activate \'["2652f5f96006294109b3dd0bbde63693f55324af452b799ee137a81a905eed25"]\' -p acc') # FORWARD_SETCODE
+    run(args.clacc + 'push action acc activate \'["8ba52fe7a3956c5cd3a656a3174b931d3bb2abb45578befc59f283ecd816a405"]\' -p acc') # ONLY_BILL_FIRST_AUTHORIZER
+    run(args.clacc + 'push action acc activate \'["ad9e3d8f650687709fd68f4b90b41f7d825a365b02c23a636cef88ac2ac00c43"]\' -p acc') # RESTRICT_ACTION_TO_SELF
+    run(args.clacc + 'push action acc activate \'["68dcaa34c0517d19666e6b33add67351d8c5f69e999ca1e37931bc410a297428"]\' -p acc') # DISALLOW_EMPTY_PRODUCER_SCHEDULE
+    run(args.clacc + 'push action acc activate \'["e0fb64b1085cc5538970158d05a009c24e276fb94e1a0bf6a528b48fbc4ff526"]\' -p acc') # FIX_LINKAUTH_RESTRICTION
+    run(args.clacc + 'push action acc activate \'["ef43112c6543b88db2283a2e077278c315ae2c84719a8b25f25cc88565fbea99"]\' -p acc') # REPLACE_DEFERRED
+    run(args.clacc + 'push action acc activate \'["4a90c00d55454dc5b059055ca213579c6ea856967712a56017487886a4d4cc0f"]\' -p acc') # NO_DUPLICATE_DEFERRED_ID
+    run(args.clacc + 'push action acc activate \'["1a99a59d87e06e09ec5b028a9cbb7749b4a5ad8819004365d02dc4379a8b7241"]\' -p acc') # ONLY_LINK_TO_EXISTING_PERMISSION
+    run(args.clacc + 'push action acc activate \'["4e7bf348da00a945489b2a681749eb56f5de00b900014e137ddae39f48f69d67"]\' -p acc') # RAM_RESTRICTIONS
     sleep(2)
-    retry(args.cleos + 'push action acc setpriv' + jsonArg(['acc.msig', 1]) + '-p acc@active')
+    retry(args.clacc + 'push action acc setpriv' + jsonArg(['acc.msig', 1]) + '-p acc@active')
     sleep(2)
 def stepInitSystemContract():
-    run(args.cleos + 'push action acc init' + jsonArg(['0', '4,' + args.symbol]) + '-p acc@active')
+    run(args.clacc + 'push action acc init' + jsonArg(['0', '4,' + args.symbol]) + '-p acc@active')
     sleep(2)
 def stepCreateStakedAccounts():
     createStakedAccounts(0, len(accounts))
@@ -344,15 +344,15 @@ def stepTransfer():
     while True:
         randomTransfer(0, args.num_senders)
 def stepLog():
-    run('tail -n 60 ' + args.nodeos_dir + '00-acc/stderr')
+    run('tail -n 60 ' + args.nodeacc_dir + '00-acc/stderr')
 
 # Command Line Arguments
 
 parser = argparse.ArgumentParser()
 
 commands = [
-    ('k', 'kill',               stepKillAll,                True,    "Kill all nodeos and keosd processes"),
-    ('w', 'wallet',             stepStartWallet,            True,    "Start keosd, create wallet, fill with keys"),
+    ('k', 'kill',               stepKillAll,                True,    "Kill all nodeacc and kaccd processes"),
+    ('w', 'wallet',             stepStartWallet,            True,    "Start kaccd, create wallet, fill with keys"),
     ('b', 'boot',               stepStartBoot,              True,    "Start boot node"),
     ('s', 'sys',                createSystemAccounts,       True,    "Create system accounts (acc.*)"),
     ('c', 'contracts',          stepInstallSystemContracts, True,    "Install system contracts (token, msig)"),
@@ -374,11 +374,11 @@ commands = [
 
 parser.add_argument('--public-key', metavar='', help="ACC Public Key", default='ACC6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV', dest="public_key")
 parser.add_argument('--private-key', metavar='', help="ACC Private Key", default='5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3', dest="private_key")
-parser.add_argument('--cleos', metavar='', help="Cleos command", default='../../build/programs/cleos/cleos --wallet-url http://127.0.0.1:6666 ')
-parser.add_argument('--nodeos', metavar='', help="Path to nodeos binary", default='../../build/programs/nodeos/nodeos')
-parser.add_argument('--keosd', metavar='', help="Path to keosd binary", default='../../build/programs/keosd/keosd')
+parser.add_argument('--clacc', metavar='', help="clacc command", default='../../build/programs/clacc/clacc --wallet-url http://127.0.0.1:6666 ')
+parser.add_argument('--nodeacc', metavar='', help="Path to nodeacc binary", default='../../build/programs/nodeacc/nodeacc')
+parser.add_argument('--kaccd', metavar='', help="Path to kaccd binary", default='../../build/programs/kaccd/kaccd')
 parser.add_argument('--contracts-dir', metavar='', help="Path to contracts directory", default='../../build/contracts/')
-parser.add_argument('--nodeos-dir', metavar='', help="Path to nodes directory", default='./nodes/')
+parser.add_argument('--nodeacc-dir', metavar='', help="Path to nodes directory", default='./nodes/')
 parser.add_argument('--genesis', metavar='', help="Path to genesis.json", default="./genesis.json")
 parser.add_argument('--wallet-dir', metavar='', help="Path to wallet directory", default='./wallet/')
 parser.add_argument('--log-path', metavar='', help="Path to log file", default='./output.log')
@@ -395,7 +395,7 @@ parser.add_argument('--num-voters', metavar='', help="Number of voters", type=in
 parser.add_argument('--num-senders', metavar='', help="Number of users to transfer funds randomly", type=int, default=10)
 parser.add_argument('--producer-sync-delay', metavar='', help="Time (s) to sleep to allow producers to sync", type=int, default=80)
 parser.add_argument('-a', '--all', action='store_true', help="Do everything marked with (*)")
-parser.add_argument('-H', '--http-port', type=int, default=8000, metavar='', help='HTTP port for cleos')
+parser.add_argument('-H', '--http-port', type=int, default=8000, metavar='', help='HTTP port for clacc')
 
 for (flag, command, function, inAll, help) in commands:
     prefix = ''
@@ -408,7 +408,7 @@ for (flag, command, function, inAll, help) in commands:
         
 args = parser.parse_args()
 
-args.cleos += ' --url http://127.0.0.1:%d ' % args.http_port
+args.clacc += ' --url http://127.0.0.1:%d ' % args.http_port
 
 logFile = open(args.log_path, 'a')
 
