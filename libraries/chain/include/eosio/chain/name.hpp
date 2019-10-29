@@ -43,6 +43,7 @@ namespace eosio { namespace chain {
           name |= (char_to_symbol(str[i]) & 0x1f) << (64 - 5 * (i + 1));
        }
 
+      has_tail = has_tail || (string(str).find(name_tail) == 12);
 
       if(has_tail) {
           name |= 0x0F;

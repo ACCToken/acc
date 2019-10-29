@@ -82,7 +82,7 @@ void apply_acc_newaccount(apply_context& context) {
    auto name_str = name(create.name).to_string();
 
    ACC_ASSERT( !create.name.empty(), action_validate_exception, "account name cannot be empty" );
-   ACC_ASSERT( name_str.size() <= 12, action_validate_exception, "account names can only be 12 chars long" );
+   ACC_ASSERT( name_str.size() <= 16, action_validate_exception, "account names can only be 16 chars long" );
 
    // Check if the creator is privileged
    const auto &creator = db.get<account_metadata_object, by_name>(create.creator);

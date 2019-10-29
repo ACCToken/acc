@@ -12,6 +12,7 @@ namespace eosio { namespace chain {
 
       ACC_ASSERT(len <= 13 || (has_tail && len <= 17), name_type_exception, "Name is longer than 13 characters (${name}) ", ("name", string(str)));
       value = string_to_name(str);
+
       ACC_ASSERT(to_string() == string(str), name_type_exception,
                  "Name not properly normalized (name: ${name}, normalized: ${normalized}) ",
                  ("name", string(str))("normalized", to_string()));
@@ -60,7 +61,6 @@ namespace eosio { namespace chain {
 
       boost::algorithm::trim_right_if( str, []( char c ){ return c == '.'; } );
 
-      //ilog("name string ${has_tail} ${str} ${name_tail}",("has_tail",has_tail)("str",str)("name_tail",name_tail));
       return has_tail ? str + name_tail : str;
    }
 
