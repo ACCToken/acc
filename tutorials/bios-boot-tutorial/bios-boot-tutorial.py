@@ -73,7 +73,7 @@ def startWallet():
     run('mkdir -p ' + os.path.abspath(args.wallet_dir))
     background(args.kaccd + ' --unlock-timeout %d --http-server-address 127.0.0.1:6666 --wallet-dir %s' % (unlockTimeout, os.path.abspath(args.wallet_dir)))
     sleep(.4)
-    run(args.clacc + 'wallet create --to-console')
+    run(args.clacc + 'wallet create -f %s/default_pwd' % (os.path.abspath(args.wallet_dir)))
 
 def importKeys():
     run(args.clacc + 'wallet import --private-key ' + args.private_key)
@@ -388,7 +388,7 @@ parser.add_argument('--max-user-keys', metavar='', help="Maximum user keys to im
 parser.add_argument('--ram-funds', metavar='', help="How much funds for each user to spend on ram", type=float, default=0.1)
 parser.add_argument('--min-stake', metavar='', help="Minimum stake before allocating unstaked funds", type=float, default=0.9)
 parser.add_argument('--max-unstaked', metavar='', help="Maximum unstaked funds", type=float, default=10)
-parser.add_argument('--producer-limit', metavar='', help="Maximum number of producers. (0 = no limit)", type=int, default=0)
+parser.add_argument('--producer-limit', metavar='', help="Maximum number of producers. (0 = no limit)", type=int, default=4)
 parser.add_argument('--min-producer-funds', metavar='', help="Minimum producer funds", type=float, default=1000.0000)
 parser.add_argument('--num-producers-vote', metavar='', help="Number of producers for which each user votes", type=int, default=20)
 parser.add_argument('--num-voters', metavar='', help="Number of voters", type=int, default=10)
