@@ -1,5 +1,5 @@
 add_subdirectory( nodeacc )
 add_subdirectory( clacc )
 add_subdirectory( kaccd )
-add_subdirectory( acc-launcher )
-add_subdirectory( acc-blocklog )
+#add_subdirectory( acc-launcher )
+#add_subdirectory( acc-blocklog )

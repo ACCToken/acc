@@ -236,7 +236,7 @@ configure_file(${CMAKE_SOURCE_DIR}/CMakeModules/EosioTesterBuild.cmake.in ${CMAK
 
 set(ACC_ROOT_DIR ${CMAKE_INSTALL_PREFIX})
 configure_file(${CMAKE_SOURCE_DIR}/CMakeModules/acc-config.cmake.in ${CMAKE_BINARY_DIR}/modules/acc-config.cmake @ONLY)
-install(FILES ${CMAKE_BINARY_DIR}/modules/eosio-config.cmake DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/cmake/acc)
+install(FILES ${CMAKE_BINARY_DIR}/modules/acc-config.cmake DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/cmake/acc)
 configure_file(${CMAKE_SOURCE_DIR}/CMakeModules/EosioTester.cmake.in ${CMAKE_BINARY_DIR}/modules/EosioTester.cmake @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/modules/EosioTester.cmake DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/cmake/acc)
 

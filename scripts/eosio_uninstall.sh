@@ -7,7 +7,7 @@ FULL=false
 
 function usage() {
    printf "Usage: $0 OPTION...
-  -i DIR      Directory where eosio is installed)
+  -i DIR      Directory where acc is installed)
   -y          Noninteractive mode (answers yes to every prompt)
   -f          Removal of data directory (be absolutely sure you want to delete it before using this!)
    \\n" "$0" 1>&2
@@ -65,7 +65,7 @@ INSTALL_PATHS=()
 # -f -y should proceed forward with removing the data directories without prompting the user.
 if [[ $NONINTERACTIVE == false ]] && $FULL; then
    while true; do
-      read -p "By specifying -f, removal of the eosio data directory will require a resync of data which can take days. Do you wish to proceed? (y/n) " PROCEED
+      read -p "By specifying -f, removal of the acc data directory will require a resync of data which can take days. Do you wish to proceed? (y/n) " PROCEED
       case $PROCEED in
          "" ) echo "What would you like to do?";;
          0 | true | [Yy]* ) break;;
@@ -90,10 +90,10 @@ else
             # Handle cleanup of data directory
             if $FULL; then
                ## Add both just to be safe
-               [[ $ARCH == "Darwin" ]] && INSTALL_PATHS+=("${HOME}/Library/Application\ Support/eosio")
-               [[ $ARCH != "Darwin" ]] && INSTALL_PATHS+=("${HOME}/.local/share/eosio")
+               [[ $ARCH == "Darwin" ]] && INSTALL_PATHS+=("${HOME}/Library/Application\ Support/acc")
+               [[ $ARCH != "Darwin" ]] && INSTALL_PATHS+=("${HOME}/.local/share/acc")
             fi
-            # Version < 1.8.0; Before we started using ~/eosio/1.8.x
+            # Version < 1.8.0; Before we started using ~/acc/1.8.x
             # Arrays should return with newlines (IFS=\n;helpers.sh) as Application\ Support will split into two
             for INSTALL_PATH in ${INSTALL_PATHS[@]}; do
                execute rm -rf $INSTALL_PATH
