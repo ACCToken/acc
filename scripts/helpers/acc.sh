@@ -104,7 +104,7 @@ function install-directory-prompt() {
 
 function previous-install-prompt() {
   if [[ -d $ACC_INSTALL_DIR ]]; then
-    echo "ACC has already been installed into ${ACC_INSTALL_DIR}... It's suggested that you eosio_uninstall.sh before re-running this script."
+    echo "ACC has already been installed into ${ACC_INSTALL_DIR}... It's suggested that you acc_uninstall.sh before re-running this script."
     while true; do
       [[ $NONINTERACTIVE == false ]] && printf "${COLOR_YELLOW}Do you wish to proceed anyway? (y/n)${COLOR_NC}" && read -p " " PROCEED
       echo ""
@@ -119,10 +119,10 @@ function previous-install-prompt() {
 }
 
 function resources() {
-    echo "${COLOR_CYAN}ACC website:${COLOR_NC} https://eos.io"
-    echo "${COLOR_CYAN}ACC Telegram channel:${COLOR_NC} https://t.me/EOSProject"
-    echo "${COLOR_CYAN}ACC resources:${COLOR_NC} https://eos.io/resources/"
-    echo "${COLOR_CYAN}ACC Stack Exchange:${COLOR_NC} https://eosio.stackexchange.com"
+    echo "${COLOR_CYAN}ACC website:${COLOR_NC} "
+    echo "${COLOR_CYAN}ACC Telegram channel:${COLOR_NC} "
+    echo "${COLOR_CYAN}ACC resources:${COLOR_NC} "
+    echo "${COLOR_CYAN}ACC Stack Exchange:${COLOR_NC} "
 }
 
 function print_supported_linux_distros_and_exit() {
@@ -185,7 +185,7 @@ function ensure-compiler() {
             [[ $( $(which $CXX) -dumpversion | cut -d '.' -f 1 ) -lt 7 ]] && export NO_CPP17=true
             if [[ $NO_CPP17 == false ]]; then # https://github.com/ACC/eos/issues/7402
                 while true; do
-                    echo "${COLOR_YELLOW}WARNING: Your GCC compiler ($CXX) is less performant than clang (https://github.com/ACC/eos/issues/7402). We suggest running the build script with -P or install your own clang and try again.${COLOR_NC}"
+                    echo "${COLOR_YELLOW}WARNING: Your GCC compiler ($CXX) is less performant than clang (https://github.com/EOSIO/eos/issues/7402). We suggest running the build script with -P or install your own clang and try again.${COLOR_NC}"
                     [[ $NONINTERACTIVE == false ]] && printf "${COLOR_YELLOW}Do you wish to proceed anyway? (y/n)?${COLOR_NC}" && read -p " " PROCEED
                     case $PROCEED in
                         "" ) echo "What would you like to do?";;

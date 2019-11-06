@@ -1,8 +1,8 @@
 set(VENDOR "acc")
-set(PROJECT_NAME "eosio")
+set(PROJECT_NAME "acc")
 set(DESC "Software for the ACC network")
-set(URL "https://github.com/eosio/eos")
-set(EMAIL "support@acc")
+set(URL "")
+set(EMAIL "support@acc.top")
 
 configure_file(${CMAKE_SOURCE_DIR}/scripts/generate_package.sh.in ${CMAKE_BINARY_DIR}/packages/generate_package.sh @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/generate_bottle.sh ${CMAKE_BINARY_DIR}/packages/generate_bottle.sh COPYONLY)

@@ -57,6 +57,6 @@ echo "class ACC < Formula
       raise \"Error, only supporting binary packages at this time\"
    end
 end
-__END__" &> eosio.rb
+__END__" &> acc.rb
 
 rm -r ${PROJECT} || exit 1

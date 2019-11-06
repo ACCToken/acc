@@ -117,7 +117,7 @@ export CURRENT_WORKING_DIR=$(pwd) # relative path support
 cd $( dirname "${BASH_SOURCE[0]}" )/..
 
 # Load eosio specific helper functions
-. ./scripts/helpers/eosio.sh
+. ./scripts/helpers/acc.sh
 
 $VERBOSE && echo "Build Script Version: ${SCRIPT_VERSION}"
 echo "ACC Version: ${ACC_VERSION_FULL}"
@@ -170,13 +170,13 @@ if [[ $ARCH == "Linux" ]]; then
    case $NAME in
       "Amazon Linux AMI" | "Amazon Linux")
          echo "${COLOR_CYAN}[Ensuring YUM installation]${COLOR_NC}"
-         FILE="${REPO_ROOT}/scripts/eosio_build_amazonlinux.sh"
+         FILE="${REPO_ROOT}/scripts/acc_build_amazonlinux.sh"
       ;;
       "CentOS Linux")
-         FILE="${REPO_ROOT}/scripts/eosio_build_centos.sh"
+         FILE="${REPO_ROOT}/scripts/acc_build_centos.sh"
       ;;
       "Ubuntu")
-         FILE="${REPO_ROOT}/scripts/eosio_build_ubuntu.sh"
+         FILE="${REPO_ROOT}/scripts/acc_build_ubuntu.sh"
       ;;
       *) print_supported_linux_distros_and_exit;;
    esac
@@ -187,7 +187,7 @@ if [ "$ARCH" == "Darwin" ]; then
    # opt/gettext: clacc requires Intl, which requires gettext; it's keg only though and we don't want to force linking: https://github.com/ACC/eos/issues/2240#issuecomment-396309884
    # ACC_INSTALL_DIR/lib/cmake: mongo_db_plugin.cpp:25:10: fatal error: 'bsoncxx/builder/basic/kvp.hpp' file not found
    CMAKE_PREFIX_PATHS="/usr/local/opt/gettext;${ACC_INSTALL_DIR}"
-   FILE="${SCRIPT_DIR}/eosio_build_darwin.sh"
+   FILE="${SCRIPT_DIR}/acc_build_darwin.sh"
    OPENSSL_ROOT_DIR=/usr/local/opt/openssl
    export CMAKE=${CMAKE}
 fi
@@ -237,8 +237,8 @@ echo " /_/    \_\_____\_____|"
 echo "=======================${COLOR_NC}"
 
 echo "${COLOR_GREEN}ACC has been successfully built. $(($TIME_END/3600)):$(($TIME_END%3600/60)):$(($TIME_END%60))"
-echo "${COLOR_GREEN}You can now install using: ${SCRIPT_DIR}/eosio_install.sh${COLOR_NC}"
-echo "${COLOR_YELLOW}Uninstall with: ${SCRIPT_DIR}/eosio_uninstall.sh${COLOR_NC}"
+echo "${COLOR_GREEN}You can now install using: ${SCRIPT_DIR}/acc_install.sh${COLOR_NC}"
+echo "${COLOR_YELLOW}Uninstall with: ${SCRIPT_DIR}/acc_uninstall.sh${COLOR_NC}"
 
 echo ""
 echo "${COLOR_CYAN}If you wish to perform tests to ensure functional code:${COLOR_NC}"

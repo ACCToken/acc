@@ -1,8 +1,8 @@
 if(ACC_ROOT STREQUAL "" OR NOT ACC_ROOT)
    set(ACC_ROOT "@ACC_ROOT_DIR@")
 endif()
-list(APPEND CMAKE_MODULE_PATH ${ACC_ROOT}/lib/cmake/eosio)
-list(APPEND CMAKE_MODULE_PATH ${ACC_ROOT}/lib64/cmake/eosio)
+list(APPEND CMAKE_MODULE_PATH ${ACC_ROOT}/lib/cmake/acc)
+list(APPEND CMAKE_MODULE_PATH ${ACC_ROOT}/lib64/cmake/acc)
 include(EosioTester)
 
 function(EXTRACT_MAJOR_MINOR_FROM_VERSION version success major minor)
