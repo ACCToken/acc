@@ -1,7 +1,7 @@
 set(VENDOR "acc")
 set(PROJECT_NAME "acc")
 set(DESC "Software for the ACC network")
-set(URL "")
+set(URL "https://github.com/ACCToken/acc")
 set(EMAIL "support@acc.top")
 
 configure_file(${CMAKE_SOURCE_DIR}/scripts/generate_package.sh.in ${CMAKE_BINARY_DIR}/packages/generate_package.sh @ONLY)
